@@ -4,7 +4,7 @@
 using namespace simulator;
 
 GenericTarget::GenericTarget(KinematicModel* k_model, ExtentModel* e_model, double s_o_e, double e_o_e) 
-    : _k_model{k_model}, _e_model{e_model}, _start_of_existence{s_o_e}, _end_of_existence{e_o_e}
+    : _k_model{k_model}, _e_model{e_model}, _time{s_o_e}, _start_of_existence{s_o_e}, _end_of_existence{e_o_e}
 {
 
 }
@@ -15,14 +15,28 @@ GenericTarget::~GenericTarget()
     delete _e_model;
 }
 
-void GenericTarget::step(double ts, pcl::PointCloud<pcl::PointXYZ>::Ptr const& measurements)
+bool GenericTarget::step(double time, pcl::PointCloud<pcl::PointXYZ>::Ptr const& measurements)
 {
-    Eigen::Matrix4d transformation;
-    
-    _k_model->step(ts, transformation);
-    _e_model->step(measurements);
+    double ts = time - _time;
+    _time = time;
 
-    pcl::transformPointCloud(*measurements, *measurements, transformation);
+    bool end_reached = false;
+
+    if(_time > _start_of_existence && _time < _end_of_existence)
+    {
+        Eigen::Matrix4d transformation;
+
+        _k_model->step(ts, transformation);
+        _e_model->step(measurements);
+
+        pcl::transformPointCloud(*measurements, *measurements, transformation);
+    }
+    else if(_time > _start_of_existence)
+    {
+        end_reached = true;
+    }
+
+    return end_reached;
 }
 
 validation::ValidationModel* GenericTarget::getValidationModel() const

@@ -13,7 +13,7 @@ namespace validation
     class Visualization
     {
         public:
-            Visualization();
+            Visualization(double time_steps);
             ~Visualization();
             bool draw(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements);
             bool draw(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements, std::vector<ValidationModel*> const& models);
@@ -21,6 +21,8 @@ namespace validation
         private:
             void _draw(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements);
             void _draw(std::vector<ValidationModel*> const& models);
+
+            int _time_steps_ms = 0;
 
             Parameters const _parameters;
             cv::Mat _image;

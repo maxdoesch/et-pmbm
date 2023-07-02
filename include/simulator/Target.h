@@ -15,7 +15,7 @@ namespace simulator
     class Target 
     {
         public:
-            virtual void step(double ts, pcl::PointCloud<pcl::PointXYZ>::Ptr const& measurements) = 0;
+            virtual bool step(double time, pcl::PointCloud<pcl::PointXYZ>::Ptr const& measurements) = 0;
             virtual validation::ValidationModel* getValidationModel() const = 0;
     };
 
@@ -39,15 +39,17 @@ namespace simulator
         public:
             GenericTarget(KinematicModel* k_model, ExtentModel* e_model, double s_o_e, double e_o_e);
             ~GenericTarget();
-            void step(double ts, pcl::PointCloud<pcl::PointXYZ>::Ptr const& measurements) override;
+            bool step(double time, pcl::PointCloud<pcl::PointXYZ>::Ptr const& measurements) override;
             validation::ValidationModel* getValidationModel() const override;
 
         private:
             KinematicModel* _k_model;
             ExtentModel* _e_model;
 
-            double _start_of_existence = 0;
-            double _end_of_existence = std::numeric_limits<double>::infinity();
+            double _time = 0;
+
+            double const _start_of_existence = 0;
+            double const _end_of_existence = std::numeric_limits<double>::infinity();
     };
 
     class ConstantVelocity : public KinematicModel

@@ -2,7 +2,7 @@
 
 using namespace validation;
 
-Visualization::Visualization() : _image{_parameters._img_size_y, _parameters._img_size_x, CV_8UC3, cv::Scalar(0,0,0)}
+Visualization::Visualization(double time_steps) : _time_steps_ms{(int) (1000 * time_steps)}, _image{_parameters._img_size_y, _parameters._img_size_x, CV_8UC3, cv::Scalar(0,0,0)}
 {
     cv::namedWindow(_window_name, cv::WINDOW_AUTOSIZE);
 }
@@ -20,7 +20,7 @@ bool Visualization::draw(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurement
 
     cv::imshow(_window_name, _image);
 
-    if(cv::waitKey(500) >= 0)
+    if(cv::waitKey(_time_steps_ms) >= 0)
         return false;
 
     return true;
@@ -35,7 +35,7 @@ bool Visualization::draw(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurement
 
     cv::imshow(_window_name, _image);
 
-    if(cv::waitKey(500) >= 0)
+    if(cv::waitKey(_time_steps_ms) >= 0)
         return false;
 
     return true;
