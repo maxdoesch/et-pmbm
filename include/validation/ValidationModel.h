@@ -3,17 +3,11 @@
 #include <opencv4/opencv2/opencv.hpp>
 #include <eigen3/Eigen/Dense>
 
+#include "validation/settings.h"
+
 
 namespace validation
 {
-    struct Parameters
-    {
-        int const _point_size = 2;
-        int const _img_size_x = 1280;
-        int const _img_size_y = 720;
-        int const _p2co = 50;
-    };
-
     class ValidationModel
     {
         public:
@@ -48,13 +42,15 @@ namespace validation
     class Ellipse : public ExtentModel
     {
         public:
-            Ellipse(double a, double b, double p_rate);
+            Ellipse(double a, double b, double p_rate, cv::Scalar const& color);
             void draw(cv::Mat& image, Parameters const& parameters, Eigen::Vector3d const& state) const override;
 
         private:
             double _a = 0;
             double _b = 0;
-            double _p_rate = 0;            
+            double _p_rate = 0;          
+
+            cv::Scalar _color;  
     };
 
 

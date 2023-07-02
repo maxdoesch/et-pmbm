@@ -5,6 +5,7 @@
 #include <pcl/point_types.h>
 
 #include "validation/ValidationModel.h"
+#include "validation/settings.h"
 
 
 namespace validation

@@ -7,19 +7,6 @@ Cluster::Cluster(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements) : _me
 
 }
 
-void Cluster::add(pcl::PointXYZ& point)
-{
-    _measurements->push_back(point);
-}
-
-void Cluster::add(Eigen::Vector2d& point)
-{
-    pcl::PointXYZ npoint;
-    npoint.x = point[0];
-    npoint.y = point[1];
-    _measurements->push_back(npoint);
-}
-
 void Cluster::computeMeanCov()
 {
     Eigen::Matrix2d covariance = Eigen::Matrix2d::Zero();

@@ -27,9 +27,13 @@ void GGIW::predict(double ts)
 
 double GGIW::update(Cluster const& detection)
 {
+    Eigen::MatrixXd Z = detection.covariance();
+    Eigen::MatrixXd z = detection.mean();
+    double n = detection.size();
+
     Eigen::MatrixXd X_hat = _V / (_v - 2 * _dof - 2);
-    Eigen::VectorXd epsilon = detection.mean() - _k_model->H * _k_model->m;
-    Eigen::MatrixXd S = _k_model->H * _k_model->P * _k_model->H.transpose() + X_hat / detection.size();
+    Eigen::VectorXd epsilon = z - _k_model->H * _k_model->m;
+    Eigen::MatrixXd S = _k_model->H * _k_model->P * _k_model->H.transpose() + X_hat / n;
     Eigen::MatrixXd S_inv = S.inverse();
     Eigen::MatrixXd K = _k_model->P * _k_model->H.transpose() * S_inv;
     
@@ -38,15 +42,15 @@ double GGIW::update(Cluster const& detection)
 
     Eigen::MatrixXd N = X_hat_sqrt * S_inv_sqrt * epsilon * epsilon.transpose() * S_inv_sqrt.transpose() * X_hat_sqrt.transpose();
     
-    double alpha = _alpha + detection.size();
+    double alpha = _alpha + n;
     double beta = _beta + 1;
 
     _k_model->m = _k_model->m + K * epsilon;
     _k_model->P = _k_model->P - K * _k_model->H * _k_model->P;
-    double v = _v + detection.size();
-    Eigen::MatrixXd V = _V + N + detection.covariance();
+    double v = _v + n;
+    Eigen::MatrixXd V = _V + N + 4 * Z;
 
-    double logLikelihood = - _dof / 2. * (detection.size() * std::log(M_PI) + std::log(detection.size()));
+    double logLikelihood = - _dof / 2. * (n * std::log(M_PI) + std::log(n));
     logLikelihood += (_v - _dof - 1) / 2. * std::log(_V.determinant()) + mlgamma(_dof, (v - _dof - 1) / 2.) + 0.5 * std::log(X_hat.determinant()) + lgamma(alpha) + _alpha * std::log(_beta);
     logLikelihood -= (v - _dof - 1) / 2. * std::log(V.determinant()) + mlgamma(_dof, (_v - _dof - 1) / 2.) + 0.5 * std::log(S.determinant()) + lgamma(_alpha) + alpha * std::log(beta);
 
@@ -84,7 +88,7 @@ validation::ValidationModel* GGIW::getValidationModel()
     state << _k_model->m, angle;
 
     validation::KinematicModel* k_model = new validation::ConstantVelocity(state);
-    validation::ExtentModel* e_model = new validation::Ellipse(a, b, _alpha / _beta);
+    validation::ExtentModel* e_model = new validation::Ellipse(a, b, _alpha / _beta, CV_RGB(255, 0, 0));
     validation::ValidationModel* v_model = new validation::GenericValidationModel(k_model, e_model);
 
     return v_model;

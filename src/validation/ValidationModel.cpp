@@ -25,14 +25,14 @@ void GenericValidationModel::draw(cv::Mat& image, Parameters const& parameters) 
 }
 
 
-Ellipse::Ellipse(double a, double b, double p_rate) : _a{a}, _b{b}, _p_rate{p_rate}
+Ellipse::Ellipse(double a, double b, double p_rate, cv::Scalar const& color) : _a{a}, _b{b}, _p_rate{p_rate}, _color{color}
 {
 
 }
 
 void Ellipse::draw(cv::Mat& image, Parameters const& parameters, Eigen::Vector3d const& state) const
 {
-    cv::ellipse(image, cv::Point(state[0] * parameters._p2co + parameters._img_size_x / 2, - state[1] * parameters._p2co + parameters._img_size_y / 2), cv::Size(_a  * parameters._p2co, _b  * parameters._p2co), - state[2] * 180 / M_PI, 0, 360, cv::Scalar(0, 0, 0));
+    cv::ellipse(image, cv::Point(state[0] * parameters._p2co + parameters._img_size_x / 2, - state[1] * parameters._p2co + parameters._img_size_y / 2), cv::Size(_a  * parameters._p2co, _b  * parameters._p2co), - state[2] * 180 / M_PI, 0, 360, _color);
 
     std::cout << "-------" << std::endl;
     std::cout << "p_rate: " << _p_rate << std::endl;

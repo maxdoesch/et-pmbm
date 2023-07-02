@@ -11,11 +11,11 @@ Eigen::MatrixXd matrixSqrt(Eigen::MatrixXd const& matrix)
 
 double mlgamma(int dim, double num)
 {
-    double value = dim * (dim - 1) / 4 * log(M_PI);
+    double value = dim * (dim - 1) / 4. * log(M_PI);
 
     for(int i = 1; i <= dim; i++)
     {
-        value += std::lgamma(num + (1 - i) / 2);
+        value += std::lgamma(num + (1 - i) / 2.);
     }
 
     return value;

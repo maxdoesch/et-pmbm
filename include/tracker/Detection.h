@@ -12,9 +12,7 @@ namespace tracker
     {
         public:
             Cluster(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements);
-
-            void add(pcl::PointXYZ& point);
-            void add(Eigen::Vector2d& point);
+            
             void computeMeanCov();
             int size() const;
             Eigen::Vector2d const& mean() const;

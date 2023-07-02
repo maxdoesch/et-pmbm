@@ -94,8 +94,8 @@ void Ellipse::step(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements)
     for(int i = 0; i < samples; i++)
     {
         pcl::PointXYZ point;
-        point.x = _a * normal(_gen);
-        point.y = _b * normal(_gen);
+        point.x = 0.5 * _a * normal(_gen);
+        point.y = 0.5 * _b * normal(_gen);
 
         measurements->push_back(point);
     }
@@ -103,5 +103,5 @@ void Ellipse::step(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements)
 
 validation::ExtentModel* Ellipse::getValidationModel() const
 {
-    return new validation::Ellipse(_a, _b, _p_rate);
+    return new validation::Ellipse(_a, _b, _p_rate, CV_RGB(0, 0, 255));
 }
