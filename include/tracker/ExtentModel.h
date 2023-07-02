@@ -30,7 +30,7 @@ namespace tracker
             Eigen::Matrix2d _V;
 
             double const _eta = 1.25; //Estimation and Maintenance of Measurement Rates for Multiple Extended Target Tracking p.5
-            double const _tau = 10;
+            double const _tau = 1;
             int const _dof = 2;
 
             KinematicModel* _k_model;

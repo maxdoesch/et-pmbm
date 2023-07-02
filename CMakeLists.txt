@@ -24,7 +24,7 @@ link_directories(
     ${PCL_LIBRARY_DIRS}
 )
 
-add_executable(et_pmbm src/main.cpp src/simulator/Target.cpp src/validation/Visualization.cpp src/validation/ValidationModel.cpp src/tracker/utils.cpp src/tracker/KinematicModel.cpp src/tracker/Detection.cpp src/tracker/ExtentModel.cpp)
+add_executable(et_pmbm src/main.cpp src/simulator/Target.cpp src/simulator/Simulator.cpp src/validation/Visualization.cpp src/validation/ValidationModel.cpp src/tracker/utils.cpp src/tracker/KinematicModel.cpp src/tracker/Detection.cpp src/tracker/ExtentModel.cpp)
 
 # Link libraries
 target_link_libraries(et_pmbm
