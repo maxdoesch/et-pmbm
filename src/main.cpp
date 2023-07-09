@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 
     validation::Visualization viz(time_step);
     
-    /*
+    
     Eigen::Matrix<double, 5, 1> i_state = Eigen::Matrix<double, 5, 1>::Zero();
     i_state[2] = 0.2;
     i_state[3] = 0;
@@ -24,9 +24,10 @@ int main(int argc, char** argv)
     simulator::KinematicModel* k_model = new simulator::ConstantVelocity(i_state);
     simulator::ExtentModel* e_model = new simulator::Ellipse(a, b, p_rate);
     simulator::Target* target = new simulator::GenericTarget(k_model, e_model, 1, 20);
-    */
-    simulator::Simulator simulator(time_step);
-    simulator.addNRandomTargets(3);
+    
+    simulator::Simulator simulator(time_step, 40);
+    simulator.addNRandomTargets(5);
+    //simulator.addTarget(target);
 
     tracker::GGIW extentModel(new tracker::ConstantVelocity);
 
@@ -35,7 +36,8 @@ int main(int argc, char** argv)
         pcl::PointCloud<pcl::PointXYZ>::Ptr measurements(new pcl::PointCloud<pcl::PointXYZ>);
         std::vector<validation::ValidationModel*> models;
 
-        simulator.step(measurements);
+        if(!simulator.step(measurements))
+            break;
 
         if(measurements->points.size() > 0)
         {

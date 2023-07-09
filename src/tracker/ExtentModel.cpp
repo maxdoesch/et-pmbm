@@ -1,12 +1,25 @@
 #include "tracker/ExtentModel.h"
 #include "tracker/utils.h"
 
+#include <boost/math/special_functions/gamma.hpp>
+#include <boost/math/special_functions/factorials.hpp>
+
 using namespace tracker;
 
 GGIW::GGIW(KinematicModel* k_model) : _k_model{k_model}
 {
     _V = Eigen::Matrix2d::Identity();
     _v = 2 * (_dof + 1) + 1; //v > 2d
+}
+
+GGIW::GGIW(GGIW const* e_model)
+{
+    _alpha = e_model->_alpha;
+    _beta = e_model->_beta;
+    _v = e_model->_v;
+    _V = e_model->_V;
+
+    _k_model = e_model->_k_model->copy();
 }
 
 GGIW::~GGIW()
@@ -51,17 +64,35 @@ double GGIW::update(Cluster const& detection)
     Eigen::MatrixXd V = _V + N + 4 * Z;
 
     double logLikelihood = - _dof / 2. * (n * std::log(M_PI) + std::log(n));
-    logLikelihood += (_v - _dof - 1) / 2. * std::log(_V.determinant()) + mlgamma(_dof, (v - _dof - 1) / 2.) + 0.5 * std::log(X_hat.determinant()) + lgamma(alpha) + _alpha * std::log(_beta);
-    logLikelihood -= (v - _dof - 1) / 2. * std::log(V.determinant()) + mlgamma(_dof, (_v - _dof - 1) / 2.) + 0.5 * std::log(S.determinant()) + lgamma(_alpha) + alpha * std::log(beta);
+    logLikelihood += (_v - _dof - 1) / 2. * std::log(_V.determinant()) + mlgamma(_dof, (v - _dof - 1) / 2.) + 0.5 * std::log(X_hat.determinant()) + boost::math::lgamma(alpha) + _alpha * std::log(_beta);
+    logLikelihood -= (v - _dof - 1) / 2. * std::log(V.determinant()) + mlgamma(_dof, (_v - _dof - 1) / 2.) + 0.5 * std::log(S.determinant()) + boost::math::lgamma(_alpha) + alpha * std::log(beta);
 
     _v = v;
     _V = V;
     _alpha = alpha;
     _beta = beta;
 
-    std::cout << "ll: " << logLikelihood << std::endl;
-
     return logLikelihood;
+}
+
+double GGIW::getAlpha()
+{
+    return _alpha;
+}
+
+double GGIW::getBeta()
+{
+    return _beta;
+}
+
+void GGIW::setAlpha(double const& alpha)
+{
+    _alpha = alpha;
+}
+
+void GGIW::setBeta(double const& beta)
+{
+    _beta = beta;
 }
 
 validation::ValidationModel* GGIW::getValidationModel()
@@ -92,4 +123,11 @@ validation::ValidationModel* GGIW::getValidationModel()
     validation::ValidationModel* v_model = new validation::GenericValidationModel(k_model, e_model);
 
     return v_model;
+}
+
+ExtentModel* GGIW::copy() const
+{
+    GGIW* e_model = new GGIW(this);
+
+    return e_model;
 }

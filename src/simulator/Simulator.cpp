@@ -2,9 +2,17 @@
 
 using namespace simulator;
 
-Simulator::Simulator(double time_step) : _time_step{time_step}, _gen{_rd()}
+Simulator::Simulator(double time_step, double e_o_s) : _time_step{time_step}, _end_of_simulation{e_o_s}, _gen{_rd()}
 {
 
+}
+
+Simulator::~Simulator()
+{
+    for(Target* target : _targets)
+    {
+        delete target;
+    }
 }
 
 void Simulator::addTarget(Target* target)
@@ -30,8 +38,8 @@ void Simulator::addNRandomTargets(int n)
         double b = (uniform(_gen) + 1) * 2;
         double p_rate = (uniform(_gen) + 1) * 50;
 
-        double s_o_e = (uniform(_gen) + 1) * 5;
-        double e_o_e = (uniform(_gen) + 1) * 10 + s_o_e;
+        double s_o_e = (uniform(_gen) + 1) / 2. * _end_of_simulation / 4.;
+        double e_o_e = s_o_e + (uniform(_gen) + 1) / 2. * _end_of_simulation * 3. / 4.;
 
         simulator::KinematicModel* k_model = new simulator::ConstantVelocity(i_state);
         simulator::ExtentModel* e_model = new simulator::Ellipse(a, b, p_rate);
@@ -41,7 +49,7 @@ void Simulator::addNRandomTargets(int n)
     }
 }
 
-void Simulator::step(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements)
+bool Simulator::step(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements)
 {
     measurements->clear();
 
@@ -63,6 +71,8 @@ void Simulator::step(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements)
     }
 
     _time += _time_step;
+
+    return _time < _end_of_simulation;
 }
 
 void Simulator::getValidationModels(std::vector<validation::ValidationModel*>& models)
@@ -71,4 +81,9 @@ void Simulator::getValidationModels(std::vector<validation::ValidationModel*>& m
     {
         models.push_back(target->getValidationModel());
     }
+}
+
+double Simulator::getTime()
+{
+    return _time;
 }

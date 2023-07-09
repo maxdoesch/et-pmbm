@@ -1,0 +1,3 @@
+[submodule "lib/gnuplot-iostream"]
+	path = lib/gnuplot-iostream
+	url = https://github.com/dstahlke/gnuplot-iostream.git

@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <random>
+#include <limits>
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
