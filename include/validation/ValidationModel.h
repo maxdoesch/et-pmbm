@@ -26,29 +26,39 @@ namespace validation
             virtual Eigen::VectorXd getState() const = 0;
     };
 
+    class RateModel
+    {
+        public:
+            RateModel(double p_rate);
+            double getRate() const;
+
+        private:
+            double _p_rate = 0;
+    };
+
     class GenericValidationModel : public ValidationModel
     {
         public:
-            GenericValidationModel(KinematicModel* k_model, ExtentModel* e_model);
+            GenericValidationModel(KinematicModel* k_model, ExtentModel* e_model, RateModel* r_model);
             ~GenericValidationModel();
             void draw(cv::Mat& image, Parameters const& parameters) const override;
 
         private:
             KinematicModel* _k_model;
             ExtentModel* _e_model;
+            RateModel* _r_model;
             
     };
 
     class Ellipse : public ExtentModel
     {
         public:
-            Ellipse(double a, double b, double p_rate, cv::Scalar const& color);
+            Ellipse(double a, double b, cv::Scalar const& color);
             void draw(cv::Mat& image, Parameters const& parameters, Eigen::Vector3d const& state) const override;
 
         private:
             double _a = 0;
-            double _b = 0;
-            double _p_rate = 0;          
+            double _b = 0;      
 
             cv::Scalar _color;  
     };

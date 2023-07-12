@@ -49,7 +49,7 @@ void Simulator::addNRandomTargets(int n)
     }
 }
 
-bool Simulator::step(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements)
+void Simulator::step(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements)
 {
     measurements->clear();
 
@@ -57,13 +57,15 @@ bool Simulator::step(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements)
     {
         pcl::PointCloud<pcl::PointXYZ>::Ptr target_measurements(new pcl::PointCloud<pcl::PointXYZ>);
 
-        if((*target)->step(_time, target_measurements))
+        if((*target)->endOfExistence())
         {
             delete *target;
             target = _targets.erase(target);
         }
         else
         {
+            (*target)->step(_time, target_measurements);
+
             *measurements += *target_measurements;
 
             target++;
@@ -71,19 +73,23 @@ bool Simulator::step(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements)
     }
 
     _time += _time_step;
-
-    return _time < _end_of_simulation;
 }
 
 void Simulator::getValidationModels(std::vector<validation::ValidationModel*>& models)
 {
     for(Target* target : _targets)
     {
-        models.push_back(target->getValidationModel());
+        if(target->startOfExistence() && !target->endOfExistence())
+            models.push_back(target->getValidationModel());
     }
 }
 
-double Simulator::getTime()
+double Simulator::getTime() const
 {
     return _time;
+}
+
+bool Simulator::endOfSimulation() const
+{
+    return _time > _end_of_simulation;
 }

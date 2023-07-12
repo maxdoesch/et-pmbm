@@ -16,15 +16,17 @@ namespace simulator
     class Target 
     {
         public:
-            virtual bool step(double time, pcl::PointCloud<pcl::PointXYZ>::Ptr const& measurements) = 0;
+            virtual void step(double time, pcl::PointCloud<pcl::PointXYZ>::Ptr const& measurements) = 0;
             virtual validation::ValidationModel* getValidationModel() const = 0;
+            virtual bool endOfExistence() const = 0;
+            virtual bool startOfExistence() const = 0;
     };
 
     class KinematicModel
     {
         public: 
             virtual void step(double ts, Eigen::Matrix4d& transform) = 0;
-            virtual validation::KinematicModel* getValidationModel() const = 0;
+            virtual validation::KinematicModel* getKinematicValidationModel() const = 0;
 
     };   
 
@@ -32,7 +34,8 @@ namespace simulator
     {
         public:
             virtual void step(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements) = 0;
-            virtual validation::ExtentModel* getValidationModel() const = 0;
+            virtual validation::ExtentModel* getExtentValidationModel() const = 0;
+            virtual validation::RateModel* getRateValidationModel() const = 0;
     };   
 
     class GenericTarget : public Target
@@ -40,8 +43,10 @@ namespace simulator
         public:
             GenericTarget(KinematicModel* k_model, ExtentModel* e_model, double s_o_e, double e_o_e);
             ~GenericTarget();
-            bool step(double time, pcl::PointCloud<pcl::PointXYZ>::Ptr const& measurements) override;
+            void step(double time, pcl::PointCloud<pcl::PointXYZ>::Ptr const& measurements) override;
             validation::ValidationModel* getValidationModel() const override;
+            bool endOfExistence() const override;
+            bool startOfExistence() const override;
 
         private:
             KinematicModel* _k_model;
@@ -58,7 +63,7 @@ namespace simulator
         public:
             ConstantVelocity(Eigen::Matrix<double, 5, 1> const& initial_state);
             void step(double ts, Eigen::Matrix4d& transform) override;
-            validation::KinematicModel* getValidationModel() const override;
+            validation::KinematicModel* getKinematicValidationModel() const override;
 
         private:
             Eigen::Matrix<double, 5, 1> _state;
@@ -69,7 +74,8 @@ namespace simulator
         public:
             Ellipse(double a, double b, double p_rate);
             void step(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements) override;
-            validation::ExtentModel* getValidationModel() const override;
+            validation::ExtentModel* getExtentValidationModel() const override;
+            validation::RateModel* getRateValidationModel() const override;
 
         private:
             Eigen::Matrix2d _X;

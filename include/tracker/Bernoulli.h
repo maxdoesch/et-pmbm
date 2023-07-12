@@ -14,13 +14,14 @@ namespace tracker
             Bernoulli(Bernoulli const* bernoulli);
             ~Bernoulli();
             void predict(double ts);
-            double likelihood();
-            double likelihood(Cluster const& detection, Bernoulli*& bernoulli);
+            double misdetection_likelihood();
+            double detection_likelihood(Cluster const& detection, Bernoulli*& bernoulli);
             void update_misdetection(Bernoulli*& bernoulli);
             validation::ValidationModel* getValidationModel();
 
         private:
             ExtentModel* _e_model;
+            RateModel _r_model;
             double _p_existence = 1;
 
             double const _p_survival = 0.99;

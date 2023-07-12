@@ -18,9 +18,10 @@ namespace simulator
             ~Simulator();
             void addTarget(Target* target);
             void addNRandomTargets(int n);
-            bool step(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements);
+            void step(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements);
             void getValidationModels(std::vector<validation::ValidationModel*>& models);
-            double getTime();
+            double getTime() const;
+            bool endOfSimulation() const;
         
         private:
             double _time = 0;

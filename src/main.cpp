@@ -26,18 +26,18 @@ int main(int argc, char** argv)
     simulator::Target* target = new simulator::GenericTarget(k_model, e_model, 1, 20);
     
     simulator::Simulator simulator(time_step, 40);
-    simulator.addNRandomTargets(5);
-    //simulator.addTarget(target);
+    //simulator.addNRandomTargets(5);
+    simulator.addTarget(target);
 
-    tracker::GGIW extentModel(new tracker::ConstantVelocity);
+    tracker::GIW extentModel(new tracker::ConstantVelocity);
+    tracker::RateModel rateModel;
 
     while(1)
     {
         pcl::PointCloud<pcl::PointXYZ>::Ptr measurements(new pcl::PointCloud<pcl::PointXYZ>);
         std::vector<validation::ValidationModel*> models;
 
-        if(!simulator.step(measurements))
-            break;
+        simulator.step(measurements);
 
         if(measurements->points.size() > 0)
         {
@@ -46,8 +46,9 @@ int main(int argc, char** argv)
             tracker::Cluster detection(measurements);
             detection.computeMeanCov();
             extentModel.update(detection);
+            rateModel.update(detection);
 
-            validation::ValidationModel* estimate = extentModel.getValidationModel();
+            validation::GenericValidationModel* estimate = new validation::GenericValidationModel(extentModel.getKinematicValidationModel(), extentModel.getExtentValidationModel(), rateModel.getRateValidationModel());
             models.push_back(estimate);
         }
 
@@ -55,11 +56,15 @@ int main(int argc, char** argv)
             break;
 
         extentModel.predict(time_step);
+        rateModel.predict();
 
         for(validation::ValidationModel* v_model : models)
         {
             delete v_model;
         }
         models.clear(); 
+
+        if(simulator.endOfSimulation())
+            break;
     }
 }

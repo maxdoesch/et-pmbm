@@ -15,12 +15,10 @@ GenericTarget::~GenericTarget()
     delete _e_model;
 }
 
-bool GenericTarget::step(double time, pcl::PointCloud<pcl::PointXYZ>::Ptr const& measurements)
+void GenericTarget::step(double time, pcl::PointCloud<pcl::PointXYZ>::Ptr const& measurements)
 {
     double ts = time - _time;
     _time = time;
-
-    bool end_reached = false;
 
     if(_time > _start_of_existence && _time < _end_of_existence)
     {
@@ -31,17 +29,21 @@ bool GenericTarget::step(double time, pcl::PointCloud<pcl::PointXYZ>::Ptr const&
 
         pcl::transformPointCloud(*measurements, *measurements, transformation);
     }
-    else if(_time > _start_of_existence)
-    {
-        end_reached = true;
-    }
-
-    return end_reached;
 }
 
 validation::ValidationModel* GenericTarget::getValidationModel() const
 {
-    return new validation::GenericValidationModel(_k_model->getValidationModel(), _e_model->getValidationModel());
+    return new validation::GenericValidationModel(_k_model->getKinematicValidationModel(), _e_model->getExtentValidationModel(), _e_model->getRateValidationModel());
+}
+
+bool GenericTarget::endOfExistence() const
+{
+    return _time > _end_of_existence;
+}
+
+bool GenericTarget::startOfExistence() const
+{
+    return _time > _start_of_existence;
 }
 
 ConstantVelocity::ConstantVelocity(Eigen::Matrix<double, 5, 1> const& initial_state) : _state{initial_state}
@@ -62,7 +64,7 @@ void ConstantVelocity::step(double ts, Eigen::Matrix4d& transformation)
     transformation << rotation, translation, Eigen::Matrix<double, 1, 3>::Zero(), 1;
 }
 
-validation::KinematicModel* ConstantVelocity::getValidationModel() const
+validation::KinematicModel* ConstantVelocity::getKinematicValidationModel() const
 {
     return new validation::ConstantVelocity(_state);
 }
@@ -115,7 +117,12 @@ void Ellipse::step(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements)
     }
 }
 
-validation::ExtentModel* Ellipse::getValidationModel() const
+validation::ExtentModel* Ellipse::getExtentValidationModel() const
 {
-    return new validation::Ellipse(_a, _b, _p_rate, CV_RGB(0, 0, 255));
+    return new validation::Ellipse(_a, _b, CV_RGB(0, 0, 255));
+}
+
+validation::RateModel* Ellipse::getRateValidationModel() const
+{
+    return new validation::RateModel(_p_rate);
 }

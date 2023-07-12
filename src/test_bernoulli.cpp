@@ -27,11 +27,11 @@ int main(int argc, char** argv)
     simulator::Target* target = new simulator::GenericTarget(k_model, e_model, 1, 20);
     
     validation::Visualization viz(time_step);
-    simulator::Simulator simulator(time_step, 40);
+    simulator::Simulator simulator(time_step, 20);
     simulator.addNRandomTargets(5);
     //simulator.addTarget(target);
 
-    tracker::GGIW* extentModel = new tracker::GGIW(new tracker::ConstantVelocity);
+    tracker::GIW* extentModel = new tracker::GIW(new tracker::ConstantVelocity);
     tracker::Bernoulli* bernoulli = new tracker::Bernoulli(extentModel);
 
     int cnt = 0;
@@ -43,8 +43,7 @@ int main(int argc, char** argv)
         pcl::PointCloud<pcl::PointXYZ>::Ptr measurements(new pcl::PointCloud<pcl::PointXYZ>);
         std::vector<validation::ValidationModel*> models;
 
-        if(!simulator.step(measurements))
-            break;
+        simulator.step(measurements);
 
         if(measurements->points.size() > 0)
         {
@@ -54,8 +53,8 @@ int main(int argc, char** argv)
             detection.computeMeanCov();
 
             tracker::Bernoulli* detection_bernoulli = nullptr;
-            double detection_likelihood = bernoulli->likelihood(detection, detection_bernoulli);
-            double misdetection_likelihood = bernoulli->likelihood();
+            double detection_likelihood = bernoulli->detection_likelihood(detection, detection_bernoulli);
+            double misdetection_likelihood = bernoulli->misdetection_likelihood();
             
             detection_likelihoods.push_back(std::make_pair(simulator.getTime(), detection_likelihood));
             misdetection_likelihoods.push_back(std::make_pair(simulator.getTime(), misdetection_likelihood));
@@ -97,6 +96,9 @@ int main(int argc, char** argv)
         models.clear(); 
 
         cnt++;
+
+        if(simulator.endOfSimulation())
+            break;
     }
 
     // Create a Gnuplot object
