@@ -17,10 +17,10 @@ namespace tracker
             virtual ExtentModel* copy() const = 0;
     };
 
-    class GIW : public ExtentModel
+    template<typename KinematicTemplate> class GIW : public ExtentModel
     {
         public:
-            GIW(KinematicModel* k_model);
+            GIW();
             GIW(GIW const* e_model);
             ~GIW();
             void predict(double ts) override;
@@ -36,7 +36,7 @@ namespace tracker
             double const _tau = 1;
             int const _dof = 2;
 
-            KinematicModel* _k_model;
+            KinematicTemplate _k_model;
     };  
 
     class RateModel
@@ -50,7 +50,7 @@ namespace tracker
             double getAlpha();
             double getBeta();
             double getRate();
-            RateModel operator=(RateModel const& r_model);
+            RateModel operator=(RateModel const& r_model) const;
             validation::RateModel* getRateValidationModel() const;
 
         private:

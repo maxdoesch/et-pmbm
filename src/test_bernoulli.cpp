@@ -31,7 +31,7 @@ int main(int argc, char** argv)
     simulator.addNRandomTargets(5);
     //simulator.addTarget(target);
 
-    tracker::GIW* extentModel = new tracker::GIW(new tracker::ConstantVelocity);
+    tracker::ExtentModel* extentModel = new tracker::GIW<tracker::ConstantVelocity>;
     tracker::Bernoulli* bernoulli = new tracker::Bernoulli(extentModel);
 
     int cnt = 0;

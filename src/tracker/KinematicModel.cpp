@@ -12,21 +12,14 @@ ConstantVelocity::ConstantVelocity()
     G = Eigen::Matrix4d::Identity();
 }
 
-ConstantVelocity::ConstantVelocity(ConstantVelocity const* k_model)
+ConstantVelocity::ConstantVelocity(ConstantVelocity const& k_model)
 {
-    m = k_model->m;
-    P = k_model->P;
-    Q = k_model->Q;
-    H = k_model->H;
-    M = k_model->M;
-    G = k_model->G;
-}
-
-KinematicModel* ConstantVelocity::copy() const
-{
-    ConstantVelocity* k_model = new ConstantVelocity(this);
-
-    return k_model;
+    m = k_model.m;
+    P = k_model.P;
+    Q = k_model.Q;
+    H = k_model.H;
+    M = k_model.M;
+    G = k_model.G;
 }
 
 void ConstantVelocity::g(double ts)
@@ -39,4 +32,3 @@ void ConstantVelocity::g(double ts)
 
     P = G * P * G.transpose() + Q;
 }
-

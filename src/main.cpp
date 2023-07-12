@@ -29,7 +29,7 @@ int main(int argc, char** argv)
     //simulator.addNRandomTargets(5);
     simulator.addTarget(target);
 
-    tracker::GIW extentModel(new tracker::ConstantVelocity);
+    tracker::GIW<tracker::ConstantVelocity> extentModel;
     tracker::RateModel rateModel;
 
     while(1)

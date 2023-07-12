@@ -6,52 +6,52 @@
 
 using namespace tracker;
 
-GIW::GIW(KinematicModel* k_model) : _k_model{k_model}
+template class GIW<ConstantVelocity>;
+
+template <class KinematicTemplate> GIW<KinematicTemplate>::GIW()
 {
     _V = Eigen::Matrix2d::Identity();
     _v = 2 * (_dof + 1) + 1; //v > 2d
 }
 
-GIW::GIW(GIW const* e_model)
+template <class KinematicTemplate> GIW<KinematicTemplate>::GIW(GIW const* e_model) : _k_model(e_model->_k_model)
 {
     _v = e_model->_v;
     _V = e_model->_V;
-
-    _k_model = e_model->_k_model->copy();
 }
 
-GIW::~GIW()
+template <class KinematicTemplate> GIW<KinematicTemplate>::~GIW()
 {
-    delete _k_model;
+
 }
 
-void GIW::predict(double ts)
+template <class KinematicTemplate> void GIW<KinematicTemplate>::predict(double ts)
 {
-    _k_model->g(ts);
+    _k_model.g(ts);
 
     _v = 2 * _dof + 2 + std::exp(-ts/_tau) * (_v - 2 * _dof - 2);
-    _V = std::exp(- ts / _tau) * _k_model->M * _V * _k_model->M.transpose();
+    _V = std::exp(- ts / _tau) * _k_model.M * _V * _k_model.M.transpose();
 }
 
-double GIW::update(Cluster const& detection)
+template <class KinematicTemplate> double GIW<KinematicTemplate>::update(Cluster const& detection)
 {
     Eigen::MatrixXd Z = detection.covariance();
     Eigen::MatrixXd z = detection.mean();
     double n = detection.size();
 
     Eigen::MatrixXd X_hat = _V / (_v - 2 * _dof - 2);
-    Eigen::VectorXd epsilon = z - _k_model->H * _k_model->m;
-    Eigen::MatrixXd S = _k_model->H * _k_model->P * _k_model->H.transpose() + X_hat / n;
+    Eigen::VectorXd epsilon = z - _k_model.H * _k_model.m;
+    Eigen::MatrixXd S = _k_model.H * _k_model.P * _k_model.H.transpose() + X_hat / n;
     Eigen::MatrixXd S_inv = S.inverse();
-    Eigen::MatrixXd K = _k_model->P * _k_model->H.transpose() * S_inv;
+    Eigen::MatrixXd K = _k_model.P * _k_model.H.transpose() * S_inv;
     
     Eigen::MatrixXd X_hat_sqrt = matrixSqrt(X_hat);
     Eigen::MatrixXd S_inv_sqrt = matrixSqrt(S_inv);
 
     Eigen::MatrixXd N = X_hat_sqrt * S_inv_sqrt * epsilon * epsilon.transpose() * S_inv_sqrt.transpose() * X_hat_sqrt.transpose();
 
-    _k_model->m = _k_model->m + K * epsilon;
-    _k_model->P = _k_model->P - K * _k_model->H * _k_model->P;
+    _k_model.m = _k_model.m + K * epsilon;
+    _k_model.P = _k_model.P - K * _k_model.H * _k_model.P;
     double v = _v + n;
     Eigen::MatrixXd V = _V + N + 4 * Z;
 
@@ -65,7 +65,7 @@ double GIW::update(Cluster const& detection)
     return logLikelihood;
 }
 
-validation::ExtentModel* GIW::getExtentValidationModel() const
+template <class KinematicTemplate> validation::ExtentModel* GIW<KinematicTemplate>::getExtentValidationModel() const
 {
     Eigen::SelfAdjointEigenSolver<Eigen::Matrix2d> eigenSolver(_V / (_v - 2 * _dof - 2));
     Eigen::Matrix2d eigenVectors = eigenSolver.eigenvectors();
@@ -85,7 +85,7 @@ validation::ExtentModel* GIW::getExtentValidationModel() const
     return new validation::Ellipse(a, b, CV_RGB(255, 0, 0));
 }
 
-validation::KinematicModel* GIW::getKinematicValidationModel() const
+template <class KinematicTemplate> validation::KinematicModel* GIW<KinematicTemplate>::getKinematicValidationModel() const
 {
     Eigen::SelfAdjointEigenSolver<Eigen::Matrix2d> eigenSolver(_V / (_v - 2 * _dof - 2));
     Eigen::Matrix2d eigenVectors = eigenSolver.eigenvectors();
@@ -102,12 +102,12 @@ validation::KinematicModel* GIW::getKinematicValidationModel() const
     double angle = std::atan2(eigenVectors(1, 0), eigenVectors(0, 0));
 
     Eigen::Matrix<double, 5, 1> state;
-    state << _k_model->m, angle;
+    state << _k_model.m, angle;
 
     return new validation::ConstantVelocity(state);
 }
 
-ExtentModel* GIW::copy() const
+template <class KinematicTemplate> ExtentModel* GIW<KinematicTemplate>::copy() const
 {
     GIW* e_model = new GIW(this);
 
@@ -158,9 +158,9 @@ double RateModel::getRate()
     return _alpha / _beta;
 }
 
-RateModel RateModel::operator=(const tracker::RateModel& r_model)
+RateModel RateModel::operator=(const tracker::RateModel& r_model) const
 {
-    return RateModel(r_model._alpha, r_model._beta);
+    return r_model;
 }
 
 validation::RateModel* RateModel::getRateValidationModel() const

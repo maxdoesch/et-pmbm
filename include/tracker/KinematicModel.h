@@ -7,7 +7,6 @@ namespace tracker
     class KinematicModel
     {
         public:
-            virtual KinematicModel* copy() const = 0;
             virtual void g(double ts) = 0;
 
             Eigen::VectorXd m;
@@ -22,8 +21,7 @@ namespace tracker
     {
         public:
             ConstantVelocity();
-            ConstantVelocity(ConstantVelocity const* k_model);
-            KinematicModel* copy() const;
+            ConstantVelocity(ConstantVelocity const& k_model);
             void g(double ts) override;
 
         private:
