@@ -17,7 +17,7 @@ namespace validation
     class ExtentModel
     {
         public: 
-            virtual void draw(cv::Mat& image, Parameters const& parameters, Eigen::Vector3d const& state) const = 0;
+            virtual void draw(cv::Mat& image, Parameters const& parameters, cv::Scalar const& color, Eigen::Vector3d const& state) const = 0;
     };
 
     class KinematicModel
@@ -39,7 +39,7 @@ namespace validation
     class GenericValidationModel : public ValidationModel
     {
         public:
-            GenericValidationModel(KinematicModel* k_model, ExtentModel* e_model, RateModel* r_model);
+            GenericValidationModel(KinematicModel* k_model, ExtentModel* e_model, RateModel* r_model, cv::Scalar const& color);
             ~GenericValidationModel();
             void draw(cv::Mat& image, Parameters const& parameters) const override;
 
@@ -47,20 +47,20 @@ namespace validation
             KinematicModel* _k_model;
             ExtentModel* _e_model;
             RateModel* _r_model;
+
+            cv::Scalar _color; 
             
     };
 
     class Ellipse : public ExtentModel
     {
         public:
-            Ellipse(double a, double b, cv::Scalar const& color);
-            void draw(cv::Mat& image, Parameters const& parameters, Eigen::Vector3d const& state) const override;
+            Ellipse(double a, double b);
+            void draw(cv::Mat& image, Parameters const& parameters, cv::Scalar const& color, Eigen::Vector3d const& state) const override;
 
         private:
             double _a = 0;
-            double _b = 0;      
-
-            cv::Scalar _color;  
+            double _b = 0;       
     };
 
 

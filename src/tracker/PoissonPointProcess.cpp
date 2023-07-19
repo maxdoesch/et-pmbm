@@ -137,7 +137,7 @@ double PoissonComponent::getWeight() const
 
 validation::ValidationModel* PoissonComponent::getValidationModel()
 {
-    return new validation::GenericValidationModel(_e_model.getKinematicValidationModel(), _e_model.getExtentValidationModel(), _r_model.getRateValidationModel());
+    return new validation::GenericValidationModel(_e_model.getKinematicValidationModel(), _e_model.getExtentValidationModel(), _r_model.getRateValidationModel(), CV_RGB(0, 255, 0));
 }
 
 BirthModel::BirthModel()

@@ -33,7 +33,7 @@ void GenericTarget::step(double time, pcl::PointCloud<pcl::PointXYZ>::Ptr const&
 
 validation::ValidationModel* GenericTarget::getValidationModel() const
 {
-    return new validation::GenericValidationModel(_k_model->getKinematicValidationModel(), _e_model->getExtentValidationModel(), _e_model->getRateValidationModel());
+    return new validation::GenericValidationModel(_k_model->getKinematicValidationModel(), _e_model->getExtentValidationModel(), _e_model->getRateValidationModel(), CV_RGB(0, 0, 255));
 }
 
 bool GenericTarget::endOfExistence() const
@@ -119,7 +119,7 @@ void Ellipse::step(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements)
 
 validation::ExtentModel* Ellipse::getExtentValidationModel() const
 {
-    return new validation::Ellipse(_a, _b, CV_RGB(0, 0, 255));
+    return new validation::Ellipse(_a, _b);
 }
 
 validation::RateModel* Ellipse::getRateValidationModel() const

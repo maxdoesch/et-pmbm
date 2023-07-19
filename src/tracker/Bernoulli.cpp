@@ -82,5 +82,5 @@ void Bernoulli::update_misdetection(Bernoulli*& bernoulli)
 
 validation::ValidationModel* Bernoulli::getValidationModel()
 {
-    return new validation::GenericValidationModel(_e_model->getKinematicValidationModel(), _e_model->getExtentValidationModel(), _r_model.getRateValidationModel());
+    return new validation::GenericValidationModel(_e_model->getKinematicValidationModel(), _e_model->getExtentValidationModel(), _r_model.getRateValidationModel(), CV_RGB(255, 0, 0));
 }

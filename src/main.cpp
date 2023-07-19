@@ -48,7 +48,7 @@ int main(int argc, char** argv)
             extentModel.update(detection);
             rateModel.update(detection);
 
-            validation::GenericValidationModel* estimate = new validation::GenericValidationModel(extentModel.getKinematicValidationModel(), extentModel.getExtentValidationModel(), rateModel.getRateValidationModel());
+            validation::GenericValidationModel* estimate = new validation::GenericValidationModel(extentModel.getKinematicValidationModel(), extentModel.getExtentValidationModel(), rateModel.getRateValidationModel(), CV_RGB(255, 0, 0));
             models.push_back(estimate);
         }
 

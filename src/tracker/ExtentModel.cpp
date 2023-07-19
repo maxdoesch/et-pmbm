@@ -106,7 +106,7 @@ template <class KinematicTemplate> validation::ExtentModel* GIW<KinematicTemplat
     double a = std::sqrt(eigenValues(0));
     double b = std::sqrt(eigenValues(1));
 
-    return new validation::Ellipse(a, b, CV_RGB(255, 0, 0));
+    return new validation::Ellipse(a, b);
 }
 
 template <class KinematicTemplate> validation::KinematicModel* GIW<KinematicTemplate>::getKinematicValidationModel() const

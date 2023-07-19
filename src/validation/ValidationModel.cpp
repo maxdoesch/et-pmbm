@@ -2,8 +2,8 @@
 
 using namespace validation;
 
-GenericValidationModel::GenericValidationModel(KinematicModel* k_model, ExtentModel* e_model, RateModel* r_model) 
-    : _k_model{k_model}, _e_model{e_model}, _r_model{r_model}
+GenericValidationModel::GenericValidationModel(KinematicModel* k_model, ExtentModel* e_model, RateModel* r_model, cv::Scalar const& color) 
+    : _k_model{k_model}, _e_model{e_model}, _r_model{r_model}, _color{color}
 {
 }
 
@@ -25,17 +25,17 @@ void GenericValidationModel::draw(cv::Mat& image, Parameters const& parameters) 
     std::cout << "-------" << std::endl;
     std::cout << "p_rate: " << _r_model->getRate() << std::endl;
 
-    _e_model->draw(image, parameters, kinematicState);
+    _e_model->draw(image, parameters, _color, kinematicState);
 }
 
-Ellipse::Ellipse(double a, double b, cv::Scalar const& color)  : _a{a}, _b{b}, _color{color} 
+Ellipse::Ellipse(double a, double b)  : _a{a}, _b{b} 
 {
     
 }
 
-void Ellipse::draw(cv::Mat& image, Parameters const& parameters, Eigen::Vector3d const& state) const
+void Ellipse::draw(cv::Mat& image, Parameters const& parameters, cv::Scalar const& color, Eigen::Vector3d const& state) const
 {
-    cv::ellipse(image, cv::Point(state[0] * parameters._p2co + parameters._img_size_x / 2, - state[1] * parameters._p2co + parameters._img_size_y / 2), cv::Size(_a  * parameters._p2co, _b  * parameters._p2co), - state[2] * 180 / M_PI, 0, 360, _color);
+    cv::ellipse(image, cv::Point(state[0] * parameters._p2co + parameters._img_size_x / 2, - state[1] * parameters._p2co + parameters._img_size_y / 2), cv::Size(_a  * parameters._p2co, _b  * parameters._p2co), - state[2] * 180 / M_PI, 0, 360, color);
 }
 
 ConstantVelocity::ConstantVelocity(Eigen::Matrix<double, 5, 1> const& state) : _state{state}
