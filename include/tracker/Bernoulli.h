@@ -16,8 +16,8 @@ namespace tracker
             ~Bernoulli();
             void predict(double ts);
             double misdetection_likelihood();
-            double detection_likelihood(Cluster const& detection, Bernoulli*& bernoulli);
-            void update_misdetection(Bernoulli*& bernoulli);
+            double detection_likelihood(Cluster const& detection);
+            void update_misdetection();
             validation::ValidationModel* getValidationModel();
 
         private:

@@ -11,7 +11,7 @@
 
 int main(int argc, char** argv)
 {   
-    double time_step = 0.2;
+    double time_step = 0.05;
 
     double a = 1.0;
     double b = 2.0;
@@ -28,7 +28,7 @@ int main(int argc, char** argv)
     
     validation::Visualization viz(time_step);
     simulator::Simulator simulator(time_step, 20);
-    simulator.addNRandomTargets(5);
+    simulator.addNRandomTargets(1);
     //simulator.addTarget(target);
 
     tracker::ExtentModel* extentModel = new tracker::GIW<tracker::ConstantVelocity>;
@@ -52,18 +52,22 @@ int main(int argc, char** argv)
             tracker::Cluster detection(measurements);
             detection.computeMeanCov();
 
-            tracker::Bernoulli* detection_bernoulli = nullptr;
-            double detection_likelihood = bernoulli->detection_likelihood(detection, detection_bernoulli);
-            double misdetection_likelihood = bernoulli->misdetection_likelihood();
+            tracker::Bernoulli* detection_bernoulli = new tracker::Bernoulli(bernoulli);
+            double detection_likelihood = detection_bernoulli->detection_likelihood(detection);
+
+            tracker::Bernoulli* misdetection_bernoulli = new tracker::Bernoulli(bernoulli);
+            double misdetection_likelihood = misdetection_bernoulli->misdetection_likelihood();
             
             detection_likelihoods.push_back(std::make_pair(simulator.getTime(), detection_likelihood));
             misdetection_likelihoods.push_back(std::make_pair(simulator.getTime(), misdetection_likelihood));
 
             std::cout << detection_likelihood << "    " << misdetection_likelihood << std::endl;
 
+            delete bernoulli;
+
             if(cnt % 2)
             {
-                delete bernoulli;
+                delete misdetection_bernoulli;
                 bernoulli = detection_bernoulli;
 
                 std::cout << "Detected!    Likelihood: " << detection_likelihood << std::endl;
@@ -72,10 +76,7 @@ int main(int argc, char** argv)
             {
                 delete detection_bernoulli;
 
-                tracker::Bernoulli* misdetection_bernoulli;
-                bernoulli->update_misdetection(misdetection_bernoulli);
-
-                delete bernoulli;
+                misdetection_bernoulli->update_misdetection();
                 bernoulli = misdetection_bernoulli;
 
                 std::cout << "Misdetected!    Likelihood: " << misdetection_likelihood << std::endl;
