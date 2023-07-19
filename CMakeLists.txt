@@ -30,9 +30,9 @@ link_directories(
 )
 
 add_executable(et_pmbm src/main.cpp src/simulator/Target.cpp src/simulator/Simulator.cpp src/validation/Visualization.cpp src/validation/ValidationModel.cpp src/tracker/utils.cpp src/tracker/KinematicModel.cpp src/tracker/Detection.cpp src/tracker/ExtentModel.cpp)
-add_executable(digamma_root src/digamma_root.cpp src/tracker/utils.cpp)
+add_executable(test_distribution_merging src/test_distribution_merging.cpp src/tracker/utils.cpp)
 add_executable(test_bernoulli src/test_bernoulli.cpp src/simulator/Target.cpp src/simulator/Simulator.cpp src/validation/Visualization.cpp src/validation/ValidationModel.cpp src/tracker/utils.cpp src/tracker/KinematicModel.cpp src/tracker/Detection.cpp src/tracker/ExtentModel.cpp src/tracker/Bernoulli.cpp)
-
+add_executable(test_ppp src/test_ppp.cpp src/simulator/Target.cpp src/simulator/Simulator.cpp src/validation/Visualization.cpp src/validation/ValidationModel.cpp src/tracker/utils.cpp src/tracker/KinematicModel.cpp src/tracker/Detection.cpp src/tracker/ExtentModel.cpp src/tracker/Bernoulli.cpp src/tracker/PoissonPointProcess.cpp)
 
 # Link libraries
 target_link_libraries(et_pmbm
@@ -42,11 +42,18 @@ target_link_libraries(et_pmbm
     Eigen3::Eigen
 )
 
-target_link_libraries(digamma_root
+target_link_libraries(test_distribution_merging
     -lboost_iostreams 
 )
 
 target_link_libraries(test_bernoulli
+    ${OpenCV_LIBS}
+    ${PCL_LIBRARIES}
+    ${Boost_LIBRARIES}
+    Eigen3::Eigen
+)
+
+target_link_libraries(test_ppp
     ${OpenCV_LIBS}
     ${PCL_LIBRARIES}
     ${Boost_LIBRARIES}

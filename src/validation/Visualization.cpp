@@ -26,6 +26,20 @@ bool Visualization::draw(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurement
     return true;
 }
 
+bool Visualization::draw(std::vector<ValidationModel*> const& models)
+{
+    _image.setTo(cv::Scalar(255, 255, 255));
+
+    _draw(models);
+
+    cv::imshow(_window_name, _image);
+
+    if(cv::waitKey(_time_steps_ms) >= 0)
+        return false;
+
+    return true; 
+}
+
 bool Visualization::draw(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements, std::vector<ValidationModel*> const& models)
 {
     _image.setTo(cv::Scalar(255, 255, 255));

@@ -12,6 +12,7 @@ namespace tracker
         public:
             Bernoulli(ExtentModel* e_model);
             Bernoulli(Bernoulli const* bernoulli);
+            Bernoulli(double p_existence, ExtentModel* e_model, RateModel const& r_model);
             ~Bernoulli();
             void predict(double ts);
             double misdetection_likelihood();
@@ -23,9 +24,6 @@ namespace tracker
             ExtentModel* _e_model;
             RateModel _r_model;
             double _p_existence = 1;
-
-            double const _p_survival = 0.99;
-            double const _p_detection = 0.9;
     };
 
     class MultiBernoulli

@@ -19,13 +19,13 @@ void GenericValidationModel::draw(cv::Mat& image, Parameters const& parameters) 
     Eigen::Vector3d kinematicState;
     kinematicState << _k_model->getState().block<2,1>(0,0), _k_model->getState()[4];
 
-    _e_model->draw(image, parameters, kinematicState);
-    
     std::cout << "-------" << std::endl;
     std::cout << _k_model->getState() << std::endl;
 
     std::cout << "-------" << std::endl;
     std::cout << "p_rate: " << _r_model->getRate() << std::endl;
+
+    _e_model->draw(image, parameters, kinematicState);
 }
 
 Ellipse::Ellipse(double a, double b, cv::Scalar const& color)  : _a{a}, _b{b}, _color{color} 

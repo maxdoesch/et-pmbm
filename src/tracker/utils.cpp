@@ -2,24 +2,8 @@
 
 #include <boost/math/tools/roots.hpp>
 #include <boost/math/special_functions/gamma.hpp>
-#include <boost/math/special_functions/digamma.hpp>
-#include <boost/math/special_functions/trigamma.hpp>
 
-struct log_digamma
-{
-    log_digamma(double const& c) : _c{c} {}
-
-    std::pair<double, double> operator()(double const& x)
-    {
-        double fx = std::log(x) - boost::math::digamma(x) + _c;
-        double dfx = 1. / x -  boost::math::trigamma(x);
-
-        return std::make_pair(fx, dfx);
-    }
-
-    private:
-        double _c = 0;
-};
+#include <limits>
 
 
 Eigen::MatrixXd matrixSqrt(Eigen::MatrixXd const& matrix)
@@ -62,9 +46,88 @@ void merge_gamma(double& alpha_m, double& beta_m, double const weight[], double 
             alpha_max = alpha[i];
     }
 
-    double bias = 1 / t_weight * comp_1 - std::log(1 / t_weight * comp_2);
+    double bias = 1. / t_weight * comp_1 - std::log(1. / t_weight * comp_2);
 
     alpha_m = boost::math::tools::newton_raphson_iterate(log_digamma(bias), alpha[0], 0.0, alpha_max * 1.5, 31);
 
-    beta_m = alpha_m / (1 / t_weight * comp_2);
+    beta_m = alpha_m / (1. / t_weight * comp_2);
+}
+
+void merge_gaussian(Eigen::Vector4d& m_m, Eigen::Matrix4d& P_m, double const weight[], Eigen::Vector4d const m[], Eigen::Matrix4d const P[], int const& components)
+{
+    m_m = Eigen::Vector4d::Zero();
+    P_m = Eigen::Matrix4d::Zero();
+    double t_weight = 0;
+
+    for(int i = 0; i < components; i++)
+    {
+        m_m += weight[i] * m[i];
+        t_weight += weight[i];
+    }
+
+    m_m /= t_weight;
+
+    for(int i = 0; i < components; i++)
+    {
+        Eigen::Vector4d diff = (m[i] - m_m);
+        P_m += weight[i] * (P[i] + diff * diff.transpose());
+    }
+
+    P_m /= t_weight;
+}
+
+void merge_inverse_wishart(double& v_m, Eigen::Matrix2d& V_m, double const weight[], double const v[], Eigen::Matrix2d const V[], int const& components)
+{
+    double t_weight = 0;
+    
+    Eigen::Matrix2d comp_1 = Eigen::Matrix2d::Zero();
+    double comp_2 = 0;
+    double comp_3 = 0;
+
+    double v_max = 0;
+
+    for(int i = 0; i < components; i++)
+    {
+        t_weight += weight[i];
+
+        comp_1 += weight[i] * (v[i] - 3) * V[i].inverse();
+        comp_2 += weight[i] * (boost::math::digamma((v[i] - 3) / 2.) + boost::math::digamma((v[i] - 4) / 2.));
+        comp_3 += weight[i] * std::log(V[i].determinant());
+
+        if(v[i] > v_max)
+            v_max = v[i];
+    }
+
+    double bias = 2 * t_weight * std::log(t_weight) - t_weight * std::log(comp_1.determinant()) + comp_2 - comp_3;
+
+    v_m = boost::math::tools::newton_raphson_iterate(log_digamma_two_dof(t_weight, bias), v[0], 4., v_max * 1.5, 31);
+
+    V_m = t_weight * (v_m - 3) * comp_1.inverse();
+}
+
+double sum_log_weights(double l_weights[], int const& components)
+{
+    double max_l_weight = 0;
+    double weight_sum = 0;
+
+    for(int i = 0; i < components; i++)
+    {
+        if(l_weights[i] < max_l_weight)
+            max_l_weight = l_weights[i];
+    }
+
+    for(int i = 0; i < components; i++)
+    {
+        if(l_weights[i] != max_l_weight)
+            weight_sum += std::exp(l_weights[i] - max_l_weight);
+    }
+
+    double l_weight_sum = max_l_weight - std::log(1 + weight_sum);
+    /*
+    for(int i = 0; i < components; i++)
+    {
+        l_weights[i] = l_weights[i] - max_l_weight - l_weight_sum;
+    }*/
+
+    return l_weight_sum;
 }

@@ -1,6 +1,7 @@
 #include "tracker/ExtentModel.h"
 #include "tracker/utils.h"
 
+#include <boost/math/tools/roots.hpp>
 #include <boost/math/special_functions/gamma.hpp>
 #include <boost/math/special_functions/factorials.hpp>
 
@@ -18,6 +19,29 @@ template <class KinematicTemplate> GIW<KinematicTemplate>::GIW(GIW const* e_mode
 {
     _v = e_model->_v;
     _V = e_model->_V;
+}
+
+template <class KinematicTemplate> GIW<KinematicTemplate>::GIW(double const weights[], GIW<KinematicTemplate> const e_models[], int components)
+{
+    _merge(*this, weights, e_models, components);
+
+    KinematicTemplate* k_models = new KinematicTemplate[components];
+
+    for(int i = 0; i < components; i++)
+    {
+        k_models[i] = e_models[i]._k_model;
+    }
+
+    _k_model = KinematicTemplate(weights, k_models, components);
+
+    delete[] k_models;
+}
+
+template <class KinematicTemplate> GIW<KinematicTemplate>::GIW(Eigen::Vector4d const& m, Eigen::Matrix4d const& P, Eigen::Matrix2d const& V) : 
+    _k_model(m, P)
+{
+    _V = V;
+    _v = 2 * (_dof + 1) + 1; //v > 2d
 }
 
 template <class KinematicTemplate> GIW<KinematicTemplate>::~GIW()
@@ -114,11 +138,52 @@ template <class KinematicTemplate> ExtentModel* GIW<KinematicTemplate>::copy() c
     return e_model;
 }
 
+template <class KinematicTemplate> void GIW<KinematicTemplate>::operator=(GIW const& e_model)
+{
+    _v = e_model._v;
+    _V = e_model._V;
+    _k_model = e_model._k_model;
+}
+
+template <class KinematicTemplate> void GIW<KinematicTemplate>::_merge(GIW<KinematicTemplate>& e_model, double const weights[], GIW<KinematicTemplate> const e_models[], int components)
+{
+    double t_weight = 0;
+    
+    Eigen::Matrix2d comp_1 = Eigen::Matrix2d::Zero();
+    double comp_2 = 0;
+    double comp_3 = 0;
+
+    double v_max = 0;
+
+    for(int i = 0; i < components; i++)
+    {
+        t_weight += weights[i];
+
+        comp_1 += weights[i] * (e_models[i]._v - 3) * e_models[i]._V.inverse();
+        comp_2 += weights[i] * (boost::math::digamma((e_models[i]._v - 3) / 2.) + boost::math::digamma((e_models[i]._v - 4) / 2.));
+        comp_3 += weights[i] * std::log(e_models[i]._V.determinant());
+
+        if(e_models[i]._v > v_max)
+            v_max = e_models[i]._v;
+    }
+
+    double bias = 2 * t_weight * std::log(t_weight) - t_weight * std::log(comp_1.determinant()) + comp_2 - comp_3;
+
+    e_model._v = boost::math::tools::newton_raphson_iterate(log_digamma_two_dof(t_weight, bias), e_models[0]._v, 4., v_max * 1.5, 31);
+
+    e_model._V = t_weight * (e_model._v - 3) * comp_1.inverse();
+}
+
 RateModel::RateModel() {};
 
 RateModel::RateModel(double alpha, double beta) : _alpha{alpha}, _beta{beta} {}
 
 RateModel::RateModel(RateModel const& r_model) : _alpha{r_model._alpha}, _beta{r_model._beta} {}
+
+RateModel::RateModel(double const weights[], RateModel const r_models[], int components)
+{
+    _merge(*this, weights, r_models, components);
+}
 
 void RateModel::predict()
 {
@@ -158,12 +223,39 @@ double RateModel::getRate()
     return _alpha / _beta;
 }
 
-RateModel RateModel::operator=(const tracker::RateModel& r_model) const
+void RateModel::operator=(const tracker::RateModel& r_model)
 {
-    return r_model;
+    _alpha = r_model._alpha;
+    _beta = r_model._beta;
 }
 
 validation::RateModel* RateModel::getRateValidationModel() const
 {
     return new validation::RateModel(_alpha / _beta);
+}
+
+void RateModel::_merge(RateModel& r_model_m, double const weights[], RateModel const r_models[], int const& components) const
+{
+    double t_weight = 0;
+    double comp_1 = 0;
+    double comp_2 = 0;
+
+    double alpha_max = 0;
+
+    for(int i = 0; i < components; i++)
+    {
+        t_weight += weights[i];
+
+        comp_1 += weights[i] * (boost::math::digamma(r_models[i]._alpha) - std::log(r_models[i]._beta));
+        comp_2 += weights[i] * r_models[i]._alpha / r_models[i]._beta;
+
+        if(r_models[i]._alpha > alpha_max)
+            alpha_max = r_models[i]._alpha;
+    }
+
+    double bias = 1 / t_weight * comp_1 - std::log(1 / t_weight * comp_2);
+
+    r_model_m._alpha = boost::math::tools::newton_raphson_iterate(log_digamma(bias), r_models[0]._alpha, 0.0, alpha_max * 1.5, 31);
+
+    r_model_m._beta = r_model_m._alpha / (1 / t_weight * comp_2);
 }

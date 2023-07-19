@@ -22,9 +22,14 @@ namespace tracker
         public:
             ConstantVelocity();
             ConstantVelocity(ConstantVelocity const& k_model);
+            ConstantVelocity(double const weights[], ConstantVelocity const k_models[], int components);
+            ConstantVelocity(Eigen::Vector4d const& state, Eigen::Matrix4d const& covariance);
             void g(double ts) override;
+            void operator=(ConstantVelocity const& k_model);
 
         private:
+            void _merge(ConstantVelocity& k_model, double const weights[], ConstantVelocity const k_models[], int components);
+
             double const _sigma = 0.01;
     };
 }
