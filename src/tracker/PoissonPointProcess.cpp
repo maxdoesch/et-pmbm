@@ -19,11 +19,11 @@ void PPP::predict(double ts)
     _b_model.birth(_p_components);
 }
 
-void PPP::update_misdetection()
+void PPP::update_missed_detection()
 {
     for(auto component : _p_components)
     {
-        component->update_misdetection();
+        component->update_missed_detection();
     }
 }
 
@@ -100,7 +100,7 @@ void PoissonComponent::predict(double ts)
     _r_model.predict();
 }
 
-void PoissonComponent::update_misdetection()
+void PoissonComponent::update_missed_detection()
 {
     double alpha = _r_model.getAlpha();
     double beta = _r_model.getBeta();
@@ -135,7 +135,7 @@ double PoissonComponent::getWeight() const
     return _weight;
 }
 
-validation::ValidationModel* PoissonComponent::getValidationModel()
+validation::ValidationModel* PoissonComponent::getValidationModel() const
 {
     return new validation::GenericValidationModel(_e_model.getKinematicValidationModel(), _e_model.getExtentValidationModel(), _r_model.getRateValidationModel(), CV_RGB(0, 255, 0));
 }
@@ -173,7 +173,7 @@ BirthModel::~BirthModel()
 {
 }
 
-void BirthModel::birth(std::vector<PoissonComponent*>& b_components)
+void BirthModel::birth(std::vector<PoissonComponent*>& b_components) const
 {
     for(auto& birth_component : _birth_components)
     {

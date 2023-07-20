@@ -15,9 +15,9 @@ namespace tracker
             Bernoulli(double p_existence, ExtentModel* e_model, RateModel const& r_model);
             ~Bernoulli();
             void predict(double ts);
-            double misdetection_likelihood();
+            double missed_detection_likelihood();
             double detection_likelihood(Cluster const& detection);
-            void update_misdetection();
+            void update_missed_detection();
             validation::ValidationModel* getValidationModel();
 
         private:

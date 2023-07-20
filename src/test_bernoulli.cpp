@@ -56,7 +56,7 @@ int main(int argc, char** argv)
             double detection_likelihood = detection_bernoulli->detection_likelihood(detection);
 
             tracker::Bernoulli* misdetection_bernoulli = new tracker::Bernoulli(bernoulli);
-            double misdetection_likelihood = misdetection_bernoulli->misdetection_likelihood();
+            double misdetection_likelihood = misdetection_bernoulli->missed_detection_likelihood();
             
             detection_likelihoods.push_back(std::make_pair(simulator.getTime(), detection_likelihood));
             misdetection_likelihoods.push_back(std::make_pair(simulator.getTime(), misdetection_likelihood));
@@ -76,7 +76,7 @@ int main(int argc, char** argv)
             {
                 delete detection_bernoulli;
 
-                misdetection_bernoulli->update_misdetection();
+                misdetection_bernoulli->update_missed_detection();
                 bernoulli = misdetection_bernoulli;
 
                 std::cout << "Misdetected!    Likelihood: " << misdetection_likelihood << std::endl;

@@ -34,7 +34,7 @@ void Bernoulli::predict(double ts)
     _r_model.predict();
 }
 
-double Bernoulli::misdetection_likelihood()
+double Bernoulli::missed_detection_likelihood()
 {  
     double alpha = _r_model.getAlpha();
     double beta = _r_model.getBeta();
@@ -58,7 +58,7 @@ double Bernoulli::detection_likelihood(Cluster const& detection)
     return bernoulli_likelihood;
 }
 
-void Bernoulli::update_misdetection()
+void Bernoulli::update_missed_detection()
 {
     double alpha = _r_model.getAlpha();
     double beta = _r_model.getBeta();
