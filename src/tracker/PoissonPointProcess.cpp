@@ -82,7 +82,7 @@ PoissonComponent::PoissonComponent(double weight, GIW<ConstantVelocity> const& e
 }
 
 
-PoissonComponent::PoissonComponent(PoissonComponent const* p_component) :  _e_model{p_component->_e_model}, _r_model{p_component->_r_model}, _weight{p_component->_weight}
+PoissonComponent::PoissonComponent(PoissonComponent const& p_component) :  _e_model{p_component._e_model}, _r_model{p_component._r_model}, _weight{p_component._weight}
 {
 
 }
@@ -164,22 +164,18 @@ BirthModel::BirthModel()
 
             GIW<ConstantVelocity> e_model(init_state, init_state_covariance, init_extent_matrix);
             RateModel r_model(50, 5);
-            _birth_components.push_back(new PoissonComponent(1. / (_n_components * _n_components), e_model, r_model));
+            _birth_components.push_back(PoissonComponent(1. / (_n_components * _n_components), e_model, r_model));
         }
     }
 }
 
 BirthModel::~BirthModel()
 {
-    for(PoissonComponent* birth_component : _birth_components)
-    {
-        delete birth_component;
-    }
 }
 
 void BirthModel::birth(std::vector<PoissonComponent*>& b_components)
 {
-    for(PoissonComponent* birth_component : _birth_components)
+    for(auto& birth_component : _birth_components)
     {
         b_components.push_back(new PoissonComponent(birth_component));
     }

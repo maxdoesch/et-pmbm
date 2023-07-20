@@ -9,7 +9,7 @@
 
 int main(int argc, char** argv)
 {
-    double const time_step = 0.5;
+    double const time_step = 2;
     double const a = 1.0;
     double const b = 2.0;
     double const p_rate = 100;
@@ -38,8 +38,11 @@ int main(int argc, char** argv)
     ppp.predict(time_step);
     ppp.getValidationModels(models);
 
-    while(measurements->points.size() == 0)
+    while(measurements->points.size() == 0 && !simulator.endOfSimulation())
         simulator.step(measurements);
+
+    if(measurements->points.size() == 0)
+        return 0;
 
     tracker::Cluster detection(measurements);
     detection.computeMeanCov();
@@ -61,9 +64,5 @@ int main(int argc, char** argv)
     
     std::cout << "detection_likelihood: " << detection_likelihood << std::endl; 
 
-    while(vizualization.draw(measurements, models))
-    {
-
-    }
-
+    while(vizualization.draw(measurements, models));
 }

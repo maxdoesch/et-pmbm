@@ -122,7 +122,7 @@ double sum_log_weights(double l_weights[], int const& components)
             weight_sum += std::exp(l_weights[i] - max_l_weight);
     }
 
-    double l_weight_sum = max_l_weight - std::log(1 + weight_sum);
+    double l_weight_sum = max_l_weight + std::log(1 + weight_sum);
     /*
     for(int i = 0; i < components; i++)
     {

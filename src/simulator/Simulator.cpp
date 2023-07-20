@@ -91,5 +91,5 @@ double Simulator::getTime() const
 
 bool Simulator::endOfSimulation() const
 {
-    return _time > _end_of_simulation;
+    return _time > _end_of_simulation || _targets.empty();
 }

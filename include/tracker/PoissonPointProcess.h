@@ -13,7 +13,7 @@ namespace tracker
     {
         public:
             PoissonComponent(double weight, GIW<ConstantVelocity> const& e_model, RateModel const& r_model);
-            PoissonComponent(PoissonComponent const* p_component);
+            PoissonComponent(PoissonComponent const& p_component);
             ~PoissonComponent();
             void predict(double ts);
             void update_misdetection();
@@ -35,7 +35,7 @@ namespace tracker
             void birth(std::vector<PoissonComponent*>& b_components);
 
         private:
-            std::vector<PoissonComponent*> _birth_components;
+            std::vector<PoissonComponent> _birth_components;
 
             int const _n_components = 4;
 
