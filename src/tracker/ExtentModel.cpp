@@ -208,17 +208,17 @@ double RateModel::update(Cluster const& detection)
     return log_likelihood;
 }
 
-double RateModel::getAlpha()
+double RateModel::getAlpha() const
 {
     return _alpha;
 }
 
-double RateModel::getBeta()
+double RateModel::getBeta() const
 {
     return _beta;
 }
 
-double RateModel::getRate()
+double RateModel::getRate() const
 {
     return _alpha / _beta;
 }

@@ -34,9 +34,9 @@ void Simulator::addNRandomTargets(int n)
         i_state[3] = 0.2 * normal(_gen);
         i_state[4] = M_PI * uniform(_gen);
 
-        double a = (uniform(_gen) + 1) * 2;
-        double b = (uniform(_gen) + 1) * 2;
-        double p_rate = (uniform(_gen) + 1) * 50;
+        double a = (uniform(_gen) + 2) * 0.5;
+        double b = (uniform(_gen) + 2) * 0.5;
+        double p_rate = (uniform(_gen) + 1) * 50 + 1;
 
         double s_o_e = (uniform(_gen) + 1) / 2. * _end_of_simulation / 4.;
         double e_o_e = s_o_e + (uniform(_gen) + 1) / 2. * _end_of_simulation * 3. / 4.;

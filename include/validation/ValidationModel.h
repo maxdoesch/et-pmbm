@@ -12,6 +12,7 @@ namespace validation
     {
         public:
             virtual void draw(cv::Mat& image, Parameters const& parameters) const = 0;
+            virtual void print() const = 0;
     };
 
     class ExtentModel
@@ -42,7 +43,8 @@ namespace validation
             GenericValidationModel(KinematicModel* k_model, ExtentModel* e_model, RateModel* r_model, cv::Scalar const& color);
             ~GenericValidationModel();
             void draw(cv::Mat& image, Parameters const& parameters) const override;
-
+            void print() const override;
+            
         private:
             KinematicModel* _k_model;
             ExtentModel* _e_model;

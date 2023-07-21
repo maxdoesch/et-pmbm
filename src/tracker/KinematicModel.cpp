@@ -22,7 +22,7 @@ ConstantVelocity::ConstantVelocity(ConstantVelocity const& k_model)
     G = k_model.G;
 }
 
-ConstantVelocity::ConstantVelocity(double const weights[], ConstantVelocity const k_models[], int components)
+ConstantVelocity::ConstantVelocity(double const weights[], ConstantVelocity const k_models[], int components) : ConstantVelocity()
 {
     _merge(*this, weights, k_models, components);
 }

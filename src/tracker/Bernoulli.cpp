@@ -34,7 +34,7 @@ void Bernoulli::predict(double ts)
     _r_model.predict();
 }
 
-double Bernoulli::missed_detection_likelihood()
+double Bernoulli::missed_detection_likelihood() const
 {  
     double alpha = _r_model.getAlpha();
     double beta = _r_model.getBeta();
@@ -74,6 +74,11 @@ void Bernoulli::update_missed_detection()
     merge_gamma(alpha_m, beta_m, weight_c, alpha_c, beta_c, 2);
 
     _r_model = RateModel(alpha_m, beta_m);
+}
+
+double Bernoulli::get_pExistence() const
+{
+    return _p_existence; 
 }
 
 validation::ValidationModel* Bernoulli::getValidationModel()

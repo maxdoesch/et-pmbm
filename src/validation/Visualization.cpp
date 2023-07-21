@@ -55,6 +55,12 @@ bool Visualization::draw(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurement
     return true;
 }
 
+void Visualization::print(std::vector<ValidationModel*> const& models) const
+{
+    for(auto const& model : models)
+        model->print();
+}
+
 void Visualization::_draw(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements)
 {
     for(pcl::PointXYZ& point : *measurements)

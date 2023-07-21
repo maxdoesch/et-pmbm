@@ -18,6 +18,7 @@ namespace validation
             bool draw(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements);
             bool draw(std::vector<ValidationModel*> const& models);
             bool draw(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements, std::vector<ValidationModel*> const& models);
+            void print(std::vector<ValidationModel*> const& models) const;
 
         private:
             void _draw(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements);

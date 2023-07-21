@@ -38,7 +38,7 @@ namespace tracker
             double _v;
             Eigen::Matrix2d _V;
 
-            double const _tau = 0.5;
+            double const _tau = 2;
             int const _dof = 2;
 
             KinematicTemplate _k_model;
@@ -53,9 +53,9 @@ namespace tracker
             RateModel(double const weights[], RateModel const r_models[], int components);
             void predict();
             double update(Cluster const& detection);
-            double getAlpha();
-            double getBeta();
-            double getRate();
+            double getAlpha() const;
+            double getBeta() const;
+            double getRate() const;
             void operator=(RateModel const& r_model);
             validation::RateModel* getRateValidationModel() const;
 
