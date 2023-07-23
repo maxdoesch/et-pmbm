@@ -22,10 +22,11 @@ namespace tracker
         public:
             ConstantVelocity();
             ConstantVelocity(ConstantVelocity const& k_model);
-            ConstantVelocity(double const weights[], ConstantVelocity const k_models[], int components);
-            ConstantVelocity(Eigen::Vector4d const& state, Eigen::Matrix4d const& covariance);
-            void g(double ts) override;
+            explicit ConstantVelocity(double const weights[], ConstantVelocity const k_models[], int components);
+            explicit ConstantVelocity(Eigen::Vector4d const& state, Eigen::Matrix4d const& covariance);
             void operator=(ConstantVelocity const& k_model);
+
+            void g(double ts) override;
 
         private:
             void _merge(ConstantVelocity& k_model, double const weights[], ConstantVelocity const k_models[], int components);

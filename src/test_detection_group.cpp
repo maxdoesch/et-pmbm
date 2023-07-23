@@ -18,7 +18,7 @@ void cluster_extractor(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements, std::ve
 
     std::vector<pcl::PointIndices> cluster_indices;
     pcl::EuclideanClusterExtraction<pcl::PointXYZ> pcl_euclidean_cluster;
-    pcl_euclidean_cluster.setClusterTolerance(2);
+    pcl_euclidean_cluster.setClusterTolerance(1.5);
     pcl_euclidean_cluster.setMinClusterSize(1);
     pcl_euclidean_cluster.setSearchMethod(tree);
     pcl_euclidean_cluster.setInputCloud(measurements);
@@ -61,6 +61,8 @@ int main(int argc, char** argv)
 
     std::vector<std::pair<double, double>> hypothesis_likelihood;
 
+    std::chrono::nanoseconds::rep duration = 0;
+
     int i = 0;
     while(!simulator.endOfSimulation())
     {
@@ -74,10 +76,14 @@ int main(int argc, char** argv)
             std::vector<tracker::Cluster> detections;
             cluster_extractor(measurements, detections);
 
+            auto start = std::chrono::high_resolution_clock::now();
             tracker::DetectionGroup detectionGroup(detections, mb.getBernoullis(), ppp);
             
             tracker::MultiBernoulliMixture mbm;
             detectionGroup.solve(mbm);
+            auto stop = std::chrono::high_resolution_clock::now();
+            duration += std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
+
             detectionGroup.print();
 
             mb = mbm[0];
@@ -103,6 +109,8 @@ int main(int argc, char** argv)
             delete v_model;
         }
     }
+
+    std::cout << "Avg. processing time: " << duration / i << std::endl;
 
     Gnuplot gp;
 

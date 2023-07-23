@@ -13,10 +13,10 @@ namespace tracker
     class DetectionGroup
     {
         public:
-            DetectionGroup(std::vector<Cluster> const& detections, std::vector<Bernoulli> const& bernoullis, PPP const& ppp);
+            explicit DetectionGroup(std::vector<Cluster> const& detections, std::vector<Bernoulli> const& bernoullis, PPP const& ppp);
             ~DetectionGroup();
             
-            void solve(MultiBernoulliMixture& detectionHypotheses);
+            void solve(MultiBernoulliMixture& detection_hypotheses);
             void print();
 
         private:
@@ -26,7 +26,7 @@ namespace tracker
 
             int const _m_assignments = 1;
 
-            MurtyMiller<double>::WeightMatrix _costMatrix;
+            MurtyMiller<double>::WeightMatrix _cost_matrix;
             std::vector<std::vector<Bernoulli>> _bernoulli_matrix;
             std::vector<Bernoulli> _bernoullis;
 

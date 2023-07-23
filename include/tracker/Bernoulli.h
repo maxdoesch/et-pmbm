@@ -14,15 +14,15 @@ namespace tracker
             explicit Bernoulli(ExtentModel* e_model);
             Bernoulli(Bernoulli const& bernoulli);
             explicit Bernoulli(double p_existence, ExtentModel* e_model, RateModel const& r_model);
-
             ~Bernoulli();
+            void operator=(Bernoulli const& bernoulli);
+
             void predict(double ts);
             double missed_detection_likelihood() const;
             double detection_likelihood(Cluster const& detection);
             void update_missed_detection();
             double get_pExistence() const;
             validation::ValidationModel* getValidationModel() const;
-            void operator=(Bernoulli const& bernoulli);
 
         private:
             ExtentModel* _e_model;
@@ -34,8 +34,9 @@ namespace tracker
     {
         public:
             MultiBernoulli() {};
-            explicit MultiBernoulli(MultiBernoulli const& multi_bernoulli);
-            MultiBernoulli(std::vector<Bernoulli> const& bernoullis, double weight);
+            MultiBernoulli(MultiBernoulli const& multi_bernoulli);
+            explicit MultiBernoulli(std::vector<Bernoulli> const& bernoullis, double weight);
+            void operator=(MultiBernoulli const& multi_bernoulli);
 
             void predict(double ts);
             void prune(double threshold);
@@ -45,8 +46,6 @@ namespace tracker
 
             void getValidationModels(std::vector<validation::ValidationModel*>& models) const;
 
-            void operator=(MultiBernoulli const& multi_bernoulli);
-
         private:
             std::vector<Bernoulli> _bernoullis;
             double _weight = -std::numeric_limits<double>::infinity();
@@ -55,11 +54,11 @@ namespace tracker
     class MultiBernoulliMixture
     {
         public:
-            void add(MultiBernoulli const& multiBernoulli);
+            void add(MultiBernoulli const& multi_bernoulli);
             MultiBernoulli& operator[](int idx);
 
         private:
-            std::vector<MultiBernoulli> _multiBernoullis;
+            std::vector<MultiBernoulli> _multi_bernoulli;
     };
 
 } // namespace tracker

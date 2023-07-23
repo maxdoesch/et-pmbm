@@ -31,7 +31,7 @@ namespace validation
     class RateModel
     {
         public:
-            RateModel(double p_rate);
+            explicit RateModel(double p_rate);
             double getRate() const;
 
         private:
@@ -41,7 +41,7 @@ namespace validation
     class GenericValidationModel : public ValidationModel
     {
         public:
-            GenericValidationModel(KinematicModel* k_model, ExtentModel* e_model, RateModel* r_model, cv::Scalar const& color);
+            explicit GenericValidationModel(KinematicModel* k_model, ExtentModel* e_model, RateModel* r_model, cv::Scalar const& color);
             ~GenericValidationModel();
             void draw(cv::Mat& image) const override;
             void print() const override;
@@ -58,7 +58,7 @@ namespace validation
     class Ellipse : public ExtentModel
     {
         public:
-            Ellipse(double a, double b);
+            explicit Ellipse(double a, double b);
             void draw(cv::Mat& image, cv::Scalar const& color, Eigen::Vector3d const& state) const override;
 
         private:
@@ -70,7 +70,7 @@ namespace validation
     class ConstantVelocity : public  KinematicModel
     {
         public:
-            ConstantVelocity(Eigen::Matrix<double, 5, 1> const& state);
+            explicit ConstantVelocity(Eigen::Matrix<double, 5, 1> const& state);
             Eigen::VectorXd getState() const override;
 
         private:

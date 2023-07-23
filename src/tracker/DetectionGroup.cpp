@@ -6,7 +6,7 @@
 using namespace tracker;
 
 DetectionGroup::DetectionGroup(std::vector<Cluster> const& detections, std::vector<Bernoulli> const& bernoullis, PPP const& ppp) : 
-    _d_size{detections.size()}, _b_size{bernoullis.size()}, _costMatrix(detections.size(), bernoullis.size() + detections.size()), _bernoullis{bernoullis}
+    _d_size{detections.size()}, _b_size{bernoullis.size()}, _cost_matrix(detections.size(), bernoullis.size() + detections.size()), _bernoullis{bernoullis}
 {   
     _createCostMatrix(detections, bernoullis, ppp);
 }
@@ -29,7 +29,7 @@ void DetectionGroup::_createCostMatrix(std::vector<Cluster> const& detections, s
         for(auto const& bernoulli : bernoullis)
         {
             Bernoulli updated_bernoulli(bernoulli);
-            _costMatrix(j, i) = updated_bernoulli.detection_likelihood(detection);
+            _cost_matrix(j, i) = updated_bernoulli.detection_likelihood(detection);
 
             bernoulli_row.push_back(updated_bernoulli);
 
@@ -37,14 +37,14 @@ void DetectionGroup::_createCostMatrix(std::vector<Cluster> const& detections, s
         }
 
         for(; i < _b_size + j; i++)
-            _costMatrix(j, i) = -std::numeric_limits<double>::infinity();
+            _cost_matrix(j, i) = -std::numeric_limits<double>::infinity();
 
-        Bernoulli ppp_bernoulli = ppp.detection_likelihood(detection, _costMatrix(j, _b_size + j) );
+        Bernoulli ppp_bernoulli = ppp.detection_likelihood(detection, _cost_matrix(j, _b_size + j) );
         bernoulli_row.push_back(ppp_bernoulli);
 
 
         for(++i; i < _b_size + _d_size; i++)
-            _costMatrix(j, i) = -std::numeric_limits<double>::infinity();
+            _cost_matrix(j, i) = -std::numeric_limits<double>::infinity();
 
         _bernoulli_matrix.push_back(bernoulli_row);            
 
@@ -54,7 +54,7 @@ void DetectionGroup::_createCostMatrix(std::vector<Cluster> const& detections, s
     int i = 0;
     for(auto const& bernoulli : bernoullis)
     {
-        _costMatrix.col(i) -= bernoulli.missed_detection_likelihood() * Eigen::VectorXd::Ones(_d_size);
+        _cost_matrix.col(i) -= bernoulli.missed_detection_likelihood() * Eigen::VectorXd::Ones(_d_size);
         i++;
     }
 }
@@ -67,7 +67,7 @@ void DetectionGroup::solve(MultiBernoulliMixture& detection_hypotheses)
     for(int i = 0; i < _b_size; i++)
         bernoulli_idx.insert(i);
 
-    _assignment_hypotheses = MurtyMiller<double>::getMBestAssignments(_costMatrix, _m_assignments);
+    _assignment_hypotheses = MurtyMiller<double>::getMBestAssignments(_cost_matrix, _m_assignments);
 
     for(auto const& assignment_hypothesis : _assignment_hypotheses)
     {
@@ -103,7 +103,7 @@ void DetectionGroup::solve(MultiBernoulliMixture& detection_hypotheses)
 
 void DetectionGroup::print()
 {
-    std::cout << _costMatrix << "\n";
+    std::cout << _cost_matrix << "\n";
 
     for (auto const& assignment_hypothesis : _assignment_hypotheses)
     {

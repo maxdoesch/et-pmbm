@@ -42,7 +42,7 @@ namespace simulator
     class GenericTarget : public Target
     {
         public:
-            GenericTarget(KinematicModel* k_model, ExtentModel* e_model, double s_o_e, double e_o_e);
+            explicit GenericTarget(KinematicModel* k_model, ExtentModel* e_model, double s_o_e, double e_o_e);
             ~GenericTarget();
             void step(double time, pcl::PointCloud<pcl::PointXYZ>::Ptr const& measurements) override;
             validation::ValidationModel* getValidationModel() const override;
@@ -62,7 +62,7 @@ namespace simulator
     class ConstantVelocity : public KinematicModel
     {
         public:
-            ConstantVelocity(Eigen::Matrix<double, 5, 1> const& initial_state);
+            explicit ConstantVelocity(Eigen::Matrix<double, 5, 1> const& initial_state);
             void step(double ts, Eigen::Matrix4d& transform) override;
             validation::KinematicModel* getKinematicValidationModel() const override;
 
@@ -73,7 +73,7 @@ namespace simulator
     class Ellipse : public ExtentModel
     {
         public:
-            Ellipse(double a, double b, double p_rate);
+            explicit Ellipse(double a, double b, double p_rate);
             void step(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements) override;
             validation::ExtentModel* getExtentValidationModel() const override;
             validation::RateModel* getRateValidationModel() const override;

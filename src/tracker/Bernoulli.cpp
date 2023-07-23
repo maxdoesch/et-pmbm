@@ -148,12 +148,12 @@ void MultiBernoulli::operator=(MultiBernoulli const& multi_bernoulli)
     _weight = multi_bernoulli._weight;
 }
 
-void MultiBernoulliMixture::add(MultiBernoulli const& multiBernoulli)
+void MultiBernoulliMixture::add(MultiBernoulli const& multi_bernoulli)
 {
-    _multiBernoullis.push_back(multiBernoulli);
+    _multi_bernoulli.push_back(multi_bernoulli);
 }
 
 MultiBernoulli& MultiBernoulliMixture::operator[](int idx)
 {
-    return _multiBernoullis[idx];
+    return _multi_bernoulli[idx];
 }

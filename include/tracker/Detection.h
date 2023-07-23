@@ -11,7 +11,7 @@ namespace tracker
     class Cluster
     {
         public:
-            Cluster(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements);
+            explicit Cluster(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements);
             
             void computeMeanCov();
             int size() const;
