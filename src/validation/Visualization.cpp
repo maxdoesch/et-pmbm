@@ -2,7 +2,7 @@
 
 using namespace validation;
 
-Visualization::Visualization(double time_steps) : _time_steps_ms{(int) (1000 * time_steps)}, _image{_parameters._img_size_y, _parameters._img_size_x, CV_8UC3, cv::Scalar(0,0,0)}
+Visualization::Visualization(double time_steps) : _time_steps_ms{(int) (1000 * time_steps)}, _image{img_size_y, img_size_x, CV_8UC3, cv::Scalar(0,0,0)}
 {
     cv::namedWindow(_window_name, cv::WINDOW_AUTOSIZE);
 }
@@ -63,16 +63,16 @@ void Visualization::print(std::vector<ValidationModel*> const& models) const
 
 void Visualization::_draw(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements)
 {
-    for(pcl::PointXYZ& point : *measurements)
+    for(auto const& point : *measurements)
     {
-        cv::circle(_image, cv::Point(point.x * _parameters._p2co + _parameters._img_size_x / 2, - point.y * _parameters._p2co + _parameters._img_size_y / 2), _parameters._point_size, cv::Scalar(0, 0, 0), cv::FILLED);
+        cv::circle(_image, cv::Point(point.x * p2co + img_size_x / 2, - point.y * p2co + img_size_y / 2), point_size, cv::Scalar(0, 0, 0), cv::FILLED);
     }
 }
 
 void Visualization::_draw(std::vector<ValidationModel*> const& models)
 {
-    for(ValidationModel* model : models)
+    for(auto const& model : models)
     {
-        model->draw(_image, _parameters);
+        model->draw(_image);
     }
 }

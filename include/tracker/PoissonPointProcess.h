@@ -12,9 +12,11 @@ namespace tracker
     class PoissonComponent
     {
         public:
-            PoissonComponent(double weight, GIW<ConstantVelocity> const& e_model, RateModel const& r_model);
+            explicit PoissonComponent(double weight, GIW<ConstantVelocity> const& e_model, RateModel const& r_model);
             PoissonComponent(PoissonComponent const& p_component);
             ~PoissonComponent();
+            void operator=(PoissonComponent const& p_component);
+
             void predict(double ts);
             void update_missed_detection();
             double detection_likelihood(Cluster const& detection, GIW<ConstantVelocity>& e_model, RateModel& r_model) const;
@@ -32,7 +34,7 @@ namespace tracker
         public:
             BirthModel();
             ~BirthModel();
-            void birth(std::vector<PoissonComponent*>& b_components) const;
+            void birth(std::vector<PoissonComponent>& b_components) const;
 
         private:
             std::vector<PoissonComponent> _birth_components;
@@ -50,12 +52,11 @@ namespace tracker
             ~PPP();
             void predict(double ts);
             void update_missed_detection();
-            double detection_likelihood(Cluster const& detection, Bernoulli*& bernoulli) const;
             Bernoulli detection_likelihood(Cluster const& detection, double& likelihood) const;
             void getValidationModels(std::vector<validation::ValidationModel*>& models);
 
         private:
-            std::vector<PoissonComponent*> _p_components;
+            std::vector<PoissonComponent> _p_components;
 
             BirthModel _b_model;
     };

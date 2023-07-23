@@ -48,9 +48,9 @@ int main(int argc, char** argv)
     detection.computeMeanCov();
 
 
-    tracker::Bernoulli* bernoulli;
-    double detection_likelihood = ppp.detection_likelihood(detection, bernoulli);
-    models.push_back(bernoulli->getValidationModel());
+    double detection_likelihood;
+    tracker::Bernoulli bernoulli = ppp.detection_likelihood(detection, detection_likelihood);
+    models.push_back(bernoulli.getValidationModel());
     
     std::cout << "detection_likelihood: " << detection_likelihood << std::endl;
 
@@ -58,9 +58,8 @@ int main(int argc, char** argv)
         ppp.update_missed_detection();
     ppp.getValidationModels(models);
 
-    delete bernoulli;
-    detection_likelihood = ppp.detection_likelihood(detection, bernoulli);
-    models.push_back(bernoulli->getValidationModel());
+    bernoulli = ppp.detection_likelihood(detection, detection_likelihood);
+    models.push_back(bernoulli.getValidationModel());
     
     std::cout << "detection_likelihood: " << detection_likelihood << std::endl; 
 

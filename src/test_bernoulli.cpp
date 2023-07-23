@@ -32,7 +32,7 @@ int main(int argc, char** argv)
     //simulator.addTarget(target);
 
     tracker::ExtentModel* extentModel = new tracker::GIW<tracker::ConstantVelocity>;
-    tracker::Bernoulli* bernoulli = new tracker::Bernoulli(extentModel);
+    tracker::Bernoulli bernoulli(extentModel);
 
     int cnt = 0;
 
@@ -52,43 +52,38 @@ int main(int argc, char** argv)
             tracker::Cluster detection(measurements);
             detection.computeMeanCov();
 
-            tracker::Bernoulli* detection_bernoulli = new tracker::Bernoulli(bernoulli);
-            double detection_likelihood = detection_bernoulli->detection_likelihood(detection);
+            tracker::Bernoulli detection_bernoulli(bernoulli);
+            double detection_likelihood = detection_bernoulli.detection_likelihood(detection);
 
-            tracker::Bernoulli* misdetection_bernoulli = new tracker::Bernoulli(bernoulli);
-            double misdetection_likelihood = misdetection_bernoulli->missed_detection_likelihood();
+            tracker::Bernoulli misdetection_bernoulli(bernoulli);
+            double misdetection_likelihood = misdetection_bernoulli.missed_detection_likelihood();
             
             detection_likelihoods.push_back(std::make_pair(simulator.getTime(), detection_likelihood));
             misdetection_likelihoods.push_back(std::make_pair(simulator.getTime(), misdetection_likelihood));
 
             std::cout << detection_likelihood << "    " << misdetection_likelihood << std::endl;
 
-            delete bernoulli;
-
             if(cnt % 2)
             {
-                delete misdetection_bernoulli;
                 bernoulli = detection_bernoulli;
 
                 std::cout << "Detected!    Likelihood: " << detection_likelihood << std::endl;
             }
             else
             {
-                delete detection_bernoulli;
-
-                misdetection_bernoulli->update_missed_detection();
+                misdetection_bernoulli.update_missed_detection();
                 bernoulli = misdetection_bernoulli;
 
                 std::cout << "Misdetected!    Likelihood: " << misdetection_likelihood << std::endl;
             }
-            validation::ValidationModel* estimate = bernoulli->getValidationModel();
+            validation::ValidationModel* estimate = bernoulli.getValidationModel();
             models.push_back(estimate);
         }
 
         if(!viz.draw(measurements, models))
             break;
 
-        bernoulli->predict(time_step);
+        bernoulli.predict(time_step);
 
         for(validation::ValidationModel* v_model : models)
         {

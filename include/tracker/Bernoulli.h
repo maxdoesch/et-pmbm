@@ -12,7 +12,6 @@ namespace tracker
     {
         public:
             explicit Bernoulli(ExtentModel* e_model);
-            explicit Bernoulli(Bernoulli const* bernoulli);
             Bernoulli(Bernoulli const& bernoulli);
             explicit Bernoulli(double p_existence, ExtentModel* e_model, RateModel const& r_model);
 

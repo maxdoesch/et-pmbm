@@ -1,18 +1,13 @@
 #include "tracker/Bernoulli.h"
 #include "tracker/utils.h"
 
-#include "constants.h"
+#include "tracker/constants.h"
 
 using namespace tracker;
 
 Bernoulli::Bernoulli(ExtentModel* e_model) : _e_model{e_model}
 {
 
-}
-
-Bernoulli::Bernoulli(Bernoulli const* bernoulli) : 
-    _e_model{bernoulli->_e_model->copy()}, _r_model{bernoulli->_r_model}, _p_existence{bernoulli->_p_existence}
-{
 }
 
 Bernoulli::Bernoulli(Bernoulli const& bernoulli) :
@@ -91,6 +86,7 @@ validation::ValidationModel* Bernoulli::getValidationModel() const
 
 void Bernoulli::operator=(Bernoulli const& bernoulli)
 {
+    delete _e_model;
     _e_model = bernoulli._e_model->copy();
     _r_model = bernoulli._r_model;
     _p_existence = bernoulli._p_existence;

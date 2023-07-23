@@ -1,20 +1,19 @@
 #include "tracker/PoissonPointProcess.h"
 #include "tracker/utils.h"
 
-#include "constants.h"
+#include "tracker/constants.h"
 
 using namespace tracker;
 
 PPP::~PPP()
 {
-    for(PoissonComponent* component : _p_components)
-        delete component;
+
 }
 
 void PPP::predict(double ts)
 {
     for(auto component : _p_components)
-        component->predict(ts);
+        component.predict(ts);
 
     _b_model.birth(_p_components);
 }
@@ -23,51 +22,8 @@ void PPP::update_missed_detection()
 {
     for(auto component : _p_components)
     {
-        component->update_missed_detection();
+        component.update_missed_detection();
     }
-}
-
-double PPP::detection_likelihood(Cluster const& detection, Bernoulli*& bernoulli) const
-{
-    int total_components = _p_components.size();
-    GIW<ConstantVelocity>* e_models = new GIW<ConstantVelocity>[total_components];
-    RateModel* r_models = new RateModel[total_components];
-    double* l_weights = new double[total_components];
-    double* weights = new double[total_components];
-
-    int idx = 0;
-    for(auto component : _p_components)
-    {
-        l_weights[idx]  = component->detection_likelihood(detection, e_models[idx], r_models[idx]);
-        l_weights[idx]  += std::log(component->getWeight()) + std::log(p_detection);
-
-        idx++;
-    }
-
-    double l_weight_sum = sum_log_weights(l_weights, total_components);
-
-    for(int i = 0; i < total_components; i++)
-    {
-        l_weights[i] -= l_weight_sum;
-        weights[i] = std::exp(l_weights[i]);
-    }
-
-    GIW<ConstantVelocity>* e_model = new GIW<ConstantVelocity>(weights, e_models, total_components);
-    RateModel r_model(weights, r_models, total_components);
-
-    double p_existence = 1;
-    
-    if(detection.size() == 1)
-        p_existence = 1. / (std::exp(std::log(clutter_rate) - l_weight_sum) + 1);
-
-    bernoulli = new Bernoulli(p_existence, e_model, r_model);
-
-    delete[] e_models;
-    delete[] r_models;
-    delete[] l_weights;
-    delete[] weights;
-
-    return l_weight_sum;
 }
 
 Bernoulli PPP::detection_likelihood(Cluster const& detection, double& likelihood) const
@@ -79,10 +35,10 @@ Bernoulli PPP::detection_likelihood(Cluster const& detection, double& likelihood
     double* weights = new double[total_components];
 
     int idx = 0;
-    for(auto component : _p_components)
+    for(auto const& component : _p_components)
     {
-        l_weights[idx]  = component->detection_likelihood(detection, e_models[idx], r_models[idx]);
-        l_weights[idx]  += std::log(component->getWeight()) + std::log(p_detection);
+        l_weights[idx]  = component.detection_likelihood(detection, e_models[idx], r_models[idx]);
+        l_weights[idx]  += std::log(component.getWeight()) + std::log(p_detection);
 
         idx++;
     }
@@ -117,8 +73,8 @@ Bernoulli PPP::detection_likelihood(Cluster const& detection, double& likelihood
 
 void PPP::getValidationModels(std::vector<validation::ValidationModel*>& models)
 {
-    for(PoissonComponent* component : _p_components)
-        models.push_back(component->getValidationModel());
+    for(auto const& component : _p_components)
+        models.push_back(component.getValidationModel());
 }
 
 PoissonComponent::PoissonComponent(double weight, GIW<ConstantVelocity> const& e_model, RateModel const& r_model) : _e_model{e_model},  _weight{weight}, _r_model{r_model}
@@ -135,6 +91,13 @@ PoissonComponent::PoissonComponent(PoissonComponent const& p_component) :  _e_mo
 PoissonComponent::~PoissonComponent() 
 {
 
+}
+
+void PoissonComponent::operator=(PoissonComponent const& p_component)
+{
+    _e_model = p_component._e_model;
+    _r_model = p_component._r_model;
+    _weight = p_component._weight;
 }
 
 void PoissonComponent::predict(double ts)
@@ -218,10 +181,10 @@ BirthModel::~BirthModel()
 {
 }
 
-void BirthModel::birth(std::vector<PoissonComponent*>& b_components) const
+void BirthModel::birth(std::vector<PoissonComponent>& b_components) const
 {
     for(auto& birth_component : _birth_components)
     {
-        b_components.push_back(new PoissonComponent(birth_component));
+        b_components.push_back(PoissonComponent(birth_component));
     }
 }

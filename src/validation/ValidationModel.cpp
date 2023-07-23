@@ -14,12 +14,12 @@ GenericValidationModel::~GenericValidationModel()
     delete _r_model;
 }
 
-void GenericValidationModel::draw(cv::Mat& image, Parameters const& parameters) const
+void GenericValidationModel::draw(cv::Mat& image) const
 {
     Eigen::Vector3d kinematicState;
     kinematicState << _k_model->getState().block<2,1>(0,0), _k_model->getState()[4];
 
-    _e_model->draw(image, parameters, _color, kinematicState);
+    _e_model->draw(image, _color, kinematicState);
 }
 
 void GenericValidationModel::print() const
@@ -36,9 +36,9 @@ Ellipse::Ellipse(double a, double b)  : _a{a}, _b{b}
     
 }
 
-void Ellipse::draw(cv::Mat& image, Parameters const& parameters, cv::Scalar const& color, Eigen::Vector3d const& state) const
+void Ellipse::draw(cv::Mat& image, cv::Scalar const& color, Eigen::Vector3d const& state) const
 {
-    cv::ellipse(image, cv::Point(state[0] * parameters._p2co + parameters._img_size_x / 2, - state[1] * parameters._p2co + parameters._img_size_y / 2), cv::Size(_a  * parameters._p2co, _b  * parameters._p2co), - state[2] * 180 / M_PI, 0, 360, color, parameters._stroke_size);
+    cv::ellipse(image, cv::Point(state[0] * p2co + img_size_x / 2, - state[1] * p2co + img_size_y / 2), cv::Size(_a  * p2co, _b  * p2co), - state[2] * 180 / M_PI, 0, 360, color, stroke_size);
 }
 
 ConstantVelocity::ConstantVelocity(Eigen::Matrix<double, 5, 1> const& state) : _state{state}

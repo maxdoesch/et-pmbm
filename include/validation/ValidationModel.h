@@ -3,7 +3,7 @@
 #include <opencv4/opencv2/opencv.hpp>
 #include <eigen3/Eigen/Dense>
 
-#include "validation/settings.h"
+#include "validation/constants.h"
 
 
 namespace validation
@@ -11,14 +11,15 @@ namespace validation
     class ValidationModel
     {
         public:
-            virtual void draw(cv::Mat& image, Parameters const& parameters) const = 0;
+            virtual ~ValidationModel() {}
+            virtual void draw(cv::Mat& image) const = 0;
             virtual void print() const = 0;
     };
 
     class ExtentModel
     {
-        public: 
-            virtual void draw(cv::Mat& image, Parameters const& parameters, cv::Scalar const& color, Eigen::Vector3d const& state) const = 0;
+        public:
+            virtual void draw(cv::Mat& image, cv::Scalar const& color, Eigen::Vector3d const& state) const = 0;
     };
 
     class KinematicModel
@@ -42,7 +43,7 @@ namespace validation
         public:
             GenericValidationModel(KinematicModel* k_model, ExtentModel* e_model, RateModel* r_model, cv::Scalar const& color);
             ~GenericValidationModel();
-            void draw(cv::Mat& image, Parameters const& parameters) const override;
+            void draw(cv::Mat& image) const override;
             void print() const override;
             
         private:
@@ -58,7 +59,7 @@ namespace validation
     {
         public:
             Ellipse(double a, double b);
-            void draw(cv::Mat& image, Parameters const& parameters, cv::Scalar const& color, Eigen::Vector3d const& state) const override;
+            void draw(cv::Mat& image, cv::Scalar const& color, Eigen::Vector3d const& state) const override;
 
         private:
             double _a = 0;

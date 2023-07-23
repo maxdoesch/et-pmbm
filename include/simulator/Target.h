@@ -16,6 +16,7 @@ namespace simulator
     class Target 
     {
         public:
+            virtual ~Target() {}
             virtual void step(double time, pcl::PointCloud<pcl::PointXYZ>::Ptr const& measurements) = 0;
             virtual validation::ValidationModel* getValidationModel() const = 0;
             virtual bool endOfExistence() const = 0;

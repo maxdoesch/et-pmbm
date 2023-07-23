@@ -5,7 +5,7 @@
 #include <pcl/point_types.h>
 
 #include "validation/ValidationModel.h"
-#include "validation/settings.h"
+#include "validation/constants.h"
 
 
 namespace validation
@@ -26,7 +26,6 @@ namespace validation
 
             int _time_steps_ms = 0;
 
-            Parameters const _parameters;
             cv::Mat _image;
 
             std::string const _window_name = "Visualization";

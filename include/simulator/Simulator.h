@@ -30,9 +30,6 @@ namespace simulator
             double const _time_step;
             double const _end_of_simulation = std::numeric_limits<double>::infinity();
 
-            double const sim_area_x = 10;
-            double const sim_area_y = 5;
-
             std::random_device _rd;
             std::mt19937 _gen;
     };

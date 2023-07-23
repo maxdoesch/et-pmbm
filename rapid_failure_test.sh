@@ -1,6 +1,6 @@
 #!/bin/bash
 
-program_to_restart="/home/max/et_pmbm/build/test_detection_group"  # Replace this with the actual path to your program
+program_to_restart="/home/max/et_pmbm/build/test_ppp"  # Replace this with the actual path to your program
 
 while true; do
     # Run the program and capture its exit code
