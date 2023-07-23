@@ -70,6 +70,51 @@ double PPP::detection_likelihood(Cluster const& detection, Bernoulli*& bernoulli
     return l_weight_sum;
 }
 
+Bernoulli PPP::detection_likelihood(Cluster const& detection, double& likelihood) const
+{
+    int total_components = _p_components.size();
+    GIW<ConstantVelocity>* e_models = new GIW<ConstantVelocity>[total_components];
+    RateModel* r_models = new RateModel[total_components];
+    double* l_weights = new double[total_components];
+    double* weights = new double[total_components];
+
+    int idx = 0;
+    for(auto component : _p_components)
+    {
+        l_weights[idx]  = component->detection_likelihood(detection, e_models[idx], r_models[idx]);
+        l_weights[idx]  += std::log(component->getWeight()) + std::log(p_detection);
+
+        idx++;
+    }
+
+    double l_weight_sum = sum_log_weights(l_weights, total_components);
+
+    for(int i = 0; i < total_components; i++)
+    {
+        l_weights[i] -= l_weight_sum;
+        weights[i] = std::exp(l_weights[i]);
+    }
+
+    GIW<ConstantVelocity>* e_model = new GIW<ConstantVelocity>(weights, e_models, total_components);
+    RateModel r_model(weights, r_models, total_components);
+
+    double p_existence = 1;
+    
+    if(detection.size() == 1)
+        p_existence = 1. / (std::exp(std::log(clutter_rate) - l_weight_sum) + 1);
+
+    Bernoulli bernoulli(p_existence, e_model, r_model);
+
+    delete[] e_models;
+    delete[] r_models;
+    delete[] l_weights;
+    delete[] weights;
+
+    likelihood = l_weight_sum;
+
+    return bernoulli;
+}
+
 void PPP::getValidationModels(std::vector<validation::ValidationModel*>& models)
 {
     for(PoissonComponent* component : _p_components)
@@ -164,7 +209,7 @@ BirthModel::BirthModel()
 
             GIW<ConstantVelocity> e_model(init_state, init_state_covariance, init_extent_matrix);
             RateModel r_model(50, 5);
-            _birth_components.push_back(PoissonComponent(1. / (_n_components * _n_components), e_model, r_model));
+            _birth_components.push_back(PoissonComponent(0.5 / (_n_components * _n_components), e_model, r_model));
         }
     }
 }

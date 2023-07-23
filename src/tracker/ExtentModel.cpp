@@ -223,7 +223,7 @@ double RateModel::getRate() const
     return _alpha / _beta;
 }
 
-void RateModel::operator=(const tracker::RateModel& r_model)
+void RateModel::operator=(RateModel const& r_model)
 {
     _alpha = r_model._alpha;
     _beta = r_model._beta;

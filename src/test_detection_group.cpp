@@ -11,7 +11,7 @@
 #include "gnuplot-iostream.h"
 
 
-void cluster_extractor(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements, std::vector<tracker::Cluster*>& detections)
+void cluster_extractor(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements, std::vector<tracker::Cluster>& detections)
 {
     pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
     tree->setInputCloud(measurements);
@@ -24,6 +24,7 @@ void cluster_extractor(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements, std::ve
     pcl_euclidean_cluster.setInputCloud(measurements);
     pcl_euclidean_cluster.extract(cluster_indices);
 
+    detections.reserve(cluster_indices.size());
     for (const pcl::PointIndices & cluster : cluster_indices) 
     {
         pcl::PointCloud<pcl::PointXYZ>::Ptr cluster_measurements(new pcl::PointCloud<pcl::PointXYZ>);
@@ -36,8 +37,8 @@ void cluster_extractor(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements, std::ve
         cluster_measurements->height = 1;
         cluster_measurements->is_dense = false;
 
-        tracker::Cluster* detection = new tracker::Cluster(cluster_measurements);
-        detection->computeMeanCov();
+        tracker::Cluster detection(cluster_measurements);
+        detection.computeMeanCov();
 
         detections.push_back(detection);
     }
@@ -53,7 +54,7 @@ int main(int argc, char** argv)
 
     validation::Visualization vizualization(time_step);
 
-    std::vector<tracker::Bernoulli*> bernoullis;
+    tracker::MultiBernoulli mb;
 
     tracker::PPP ppp;
     ppp.predict(time_step);
@@ -70,52 +71,30 @@ int main(int argc, char** argv)
 
         if(measurements->points.size() > 0)
         {   
-            std::vector<tracker::Cluster*> detections;
+            std::vector<tracker::Cluster> detections;
             cluster_extractor(measurements, detections);
 
-            tracker::DetectionGroup detectionGroup(detections, bernoullis, &ppp);
-            detectionGroup.createCostMatrix();
-
-            std::vector<std::vector<tracker::Bernoulli*>*> hypotheses;
-            std::vector<double> likelihoods;
-            detectionGroup.solve(hypotheses, likelihoods);
+            tracker::DetectionGroup detectionGroup(detections, mb.getBernoullis(), ppp);
+            
+            tracker::MultiBernoulliMixture mbm;
+            detectionGroup.solve(mbm);
             detectionGroup.print();
 
-            for(auto& bernoulli : bernoullis)
-                delete bernoulli;
+            mb = mbm[0];
 
-            bernoullis = *hypotheses[0];
-
-            hypothesis_likelihood.push_back(std::make_pair(simulator.getTime(), likelihoods[0]));
-
-
-            for(auto detection : detections)
-            {
-                delete detection;
-            }
+            hypothesis_likelihood.push_back(std::make_pair(simulator.getTime(), mb.getWeight()));
 
             i++;
         }
 
-        auto bernoulli_it = bernoullis.begin();
-        while(bernoulli_it < bernoullis.end())
-        {
-            (*bernoulli_it)->predict(time_step);
-            
-            if((*bernoulli_it)->get_pExistence() < 0.1)
-            {
-                delete *bernoulli_it;
-                bernoullis.erase(bernoulli_it);
-            }
+        mb.predict(time_step);
+        mb.prune(0.1);
 
-            bernoulli_it++;
-        }
-
-        for(auto& bernoulli : bernoullis)
-            models.push_back(bernoulli->getValidationModel());
-        ppp.getValidationModels(models);
+        mb.getValidationModels(models);
+        //ppp.getValidationModels(models);
         simulator.getValidationModels(models);
 
+        //vizualization.print(models);
         if(!vizualization.draw(measurements, models))
             break;
 

@@ -48,9 +48,9 @@ namespace tracker
     {
         public:
             RateModel();
-            RateModel(double alpha, double beta);
+            explicit RateModel(double alpha, double beta);
             RateModel(RateModel const& r_model);
-            RateModel(double const weights[], RateModel const r_models[], int components);
+            explicit RateModel(double const weights[], RateModel const r_models[], int components);
             void predict();
             double update(Cluster const& detection);
             double getAlpha() const;

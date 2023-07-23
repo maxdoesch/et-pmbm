@@ -51,6 +51,7 @@ namespace tracker
             void predict(double ts);
             void update_missed_detection();
             double detection_likelihood(Cluster const& detection, Bernoulli*& bernoulli) const;
+            Bernoulli detection_likelihood(Cluster const& detection, double& likelihood) const;
             void getValidationModels(std::vector<validation::ValidationModel*>& models);
 
         private:
