@@ -28,7 +28,7 @@ int main(int argc, char** argv)
     
     validation::Visualization viz(time_step);
     simulator::Simulator simulator(time_step, 20);
-    simulator.addNRandomTargets(1);
+    simulator.addNRandomTargets(4);
     //simulator.addTarget(target);
 
     tracker::ExtentModel* extentModel = new tracker::GIW<tracker::ConstantVelocity>;

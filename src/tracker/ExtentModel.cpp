@@ -25,6 +25,9 @@ template <class KinematicTemplate> GIW<KinematicTemplate>::GIW(double const weig
 {
     _merge(*this, weights, e_models, components);
 
+    if(_v < 2 * (_dof + 1))
+        _prune(*this, weights, e_models, components);
+
     KinematicTemplate* k_models = new KinematicTemplate[components];
 
     for(int i = 0; i < components; i++)
@@ -52,6 +55,8 @@ template <class KinematicTemplate> GIW<KinematicTemplate>::~GIW()
 template <class KinematicTemplate> void GIW<KinematicTemplate>::predict(double ts)
 {
     _k_model.g(ts);
+
+    double v = _v;
 
     _v = 2 * _dof + 2 + std::exp(-ts/_tau) * (_v - 2 * _dof - 2);
     _V = std::exp(- ts / _tau) * _k_model.M * _V * _k_model.M.transpose();
@@ -84,7 +89,7 @@ template <class KinematicTemplate> double GIW<KinematicTemplate>::update(Cluster
     logLikelihood -= (v - _dof - 1) / 2. * std::log(V.determinant()) + mlgamma(_dof, (_v - _dof - 1) / 2.) + 0.5 * std::log(S.determinant());
 
     _v = v;
-    _V = V;
+    _V = 0.5 * (V + V.transpose());
 
     return logLikelihood;
 }
@@ -169,9 +174,24 @@ template <class KinematicTemplate> void GIW<KinematicTemplate>::_merge(GIW<Kinem
 
     double bias = 2 * t_weight * std::log(t_weight) - t_weight * std::log(comp_1.determinant()) + comp_2 - comp_3;
 
+    double v_min = 2 * _dof + 2;
     e_model._v = boost::math::tools::newton_raphson_iterate(log_digamma_two_dof(t_weight, bias), e_models[0]._v, 4., v_max * 1.5, 31);
-
     e_model._V = t_weight * (e_model._v - 3) * comp_1.inverse();
+}
+
+template <class KinematicTemplate> void  GIW<KinematicTemplate>::_prune(GIW& e_model, double const weights[], GIW const e_models[], int components)
+{
+    double max_weight = 0;
+
+    for(int i = 0; i < components; i++)
+    {
+        if(weights[i] > max_weight)
+        {
+            max_weight = weights[i];
+            e_model._v = e_models[i]._v;
+            e_model._V = e_models[i]._V;
+        }
+    }
 }
 
 RateModel::RateModel() {};

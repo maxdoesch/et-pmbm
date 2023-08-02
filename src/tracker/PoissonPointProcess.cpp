@@ -150,6 +150,7 @@ validation::ValidationModel* PoissonComponent::getValidationModel() const
 
 BirthModel::BirthModel()
 {
+    /*
     Eigen::Matrix4d init_state_covariance = Eigen::Matrix4d::Zero();
     init_state_covariance(0, 0) = _field_of_view_x / (_n_components + 1);
     init_state_covariance(1, 1) = _field_of_view_y / (_n_components + 1);
@@ -157,7 +158,7 @@ BirthModel::BirthModel()
     Eigen::Matrix2d init_extent_matrix = Eigen::Matrix2d::Zero(); 
     init_extent_matrix(0, 0) = _field_of_view_x / (_n_components + 1);
     init_extent_matrix(1, 1) = _field_of_view_y / (_n_components + 1);
-
+    
     for(int i = 0; i < _n_components; i++)
     {
         double x = _field_of_view_x / (_n_components + 1) * (i + 1) - _field_of_view_x / 2.;
@@ -175,6 +176,35 @@ BirthModel::BirthModel()
             _birth_components.push_back(PoissonComponent(0.5 / (_n_components * _n_components), e_model, r_model));
         }
     }
+    */
+
+       
+    Eigen::Matrix4d init_state_covariance = Eigen::Matrix4d::Zero();
+    init_state_covariance(0, 0) = 5;
+    init_state_covariance(1, 1) = 1;
+
+    Eigen::Matrix2d init_extent_matrix = Eigen::Matrix2d::Zero(); 
+    init_extent_matrix(0, 0) = _field_of_view_x / (_n_components + 1);
+    init_extent_matrix(1, 1) = _field_of_view_y / (_n_components + 1);
+
+    double x = _field_of_view_x / 2;
+    double y = 0;
+
+    Eigen::Vector4d init_state = Eigen::Vector4d::Zero();
+    init_state[0] = x;
+    init_state[1] = y;
+
+    GIW<ConstantVelocity> e_model(init_state, init_state_covariance, init_extent_matrix);
+    RateModel r_model(50, 5);
+    _birth_components.push_back(PoissonComponent(0.5, e_model, r_model));
+
+    init_state[0] = -x;
+    init_state[1] = y;
+
+    e_model = GIW<ConstantVelocity>(init_state, init_state_covariance, init_extent_matrix);
+    r_model = RateModel(50, 5);
+    _birth_components.push_back(PoissonComponent(0.5, e_model, r_model));
+    
 }
 
 BirthModel::~BirthModel()

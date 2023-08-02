@@ -45,3 +45,43 @@ Eigen::Matrix2d const& Cluster::covariance() const
 {
     return _covariance;
 }
+
+validation::ValidationModel* Cluster::getValidationModel() const
+{
+    Eigen::Matrix2d covariance = 4 * _covariance / _measurements->points.size() + Eigen::Matrix2d::Identity() * 0.0001;
+
+    Eigen::SelfAdjointEigenSolver<Eigen::Matrix2d> eigenSolver(covariance);
+    Eigen::Matrix2d eigenVectors = eigenSolver.eigenvectors();
+    Eigen::Vector2d eigenValues = eigenSolver.eigenvalues();
+
+    // Sorting eigenvalues in descending order
+    if (eigenValues(0) > eigenValues(1))
+    {
+        std::swap(eigenValues(0), eigenValues(1));
+        eigenVectors.col(0).swap(eigenVectors.col(1));
+    }
+
+    // Semi-major and semi-minor axes
+    double a = std::sqrt(eigenValues(0));
+    double b = std::sqrt(eigenValues(1));
+
+    // Rotation angle (in radians)
+    double angle = std::atan2(eigenVectors(1, 0), eigenVectors(0, 0));
+
+    Eigen::Matrix<double, 5, 1> state;
+    state << _mean, 0, 0, angle;
+
+    validation::Ellipse* ellipse = new validation::Ellipse(a, b);
+    validation::ConstantVelocity* cv = new validation::ConstantVelocity(state);
+    validation::RateModel* rate_model = new validation::RateModel(_measurements->points.size());
+
+    return new validation::GenericValidationModel(cv, ellipse, rate_model, CV_RGB(255, 255, 0));
+}
+
+void Partition::getValidationModels(std::vector<validation::ValidationModel*>& models) const
+{
+    for(auto const& detection : detections)
+    {
+        models.push_back(detection.getValidationModel());
+    }
+}

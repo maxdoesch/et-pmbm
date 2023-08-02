@@ -5,11 +5,13 @@ using namespace validation;
 Visualization::Visualization(double time_steps) : _time_steps_ms{(int) (1000 * time_steps)}, _image{img_size_y, img_size_x, CV_8UC3, cv::Scalar(0,0,0)}
 {
     cv::namedWindow(_window_name, cv::WINDOW_AUTOSIZE);
+    outputVideo.open(_vid_file_name, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 1 / time_steps, _image.size());
 }
 
 Visualization::~Visualization()
 {
     cv::destroyWindow(_window_name);
+    outputVideo.release();
 }
 
 bool Visualization::draw(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements)
@@ -59,6 +61,11 @@ void Visualization::print(std::vector<ValidationModel*> const& models) const
 {
     for(auto const& model : models)
         model->print();
+}
+
+void Visualization::record()
+{
+    outputVideo << _image;
 }
 
 void Visualization::_draw(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements)

@@ -1,7 +1,8 @@
 #include "tracker/DetectionGroup.h"
 
+#include "tracker/constants.h"
+
 #include <limits>
-#include <set>
 
 using namespace tracker;
 
@@ -94,8 +95,9 @@ void DetectionGroup::solve(MultiBernoulliMixture& detection_hypotheses)
             bernoulli_hypothesis.push_back(undetected_bernoulli);
         }
 
-        int hypothesis_likelihood = MurtyMiller<double>::objectiveFunctionValue(assignment_hypothesis);
-        
+        double hypothesis_likelihood = MurtyMiller<double>::objectiveFunctionValue(assignment_hypothesis);
+        hypothesis_likelihood = (hypothesis_likelihood < min_likelihood) ? min_likelihood : hypothesis_likelihood;
+
         MultiBernoulli multi_bernoulli(bernoulli_hypothesis, hypothesis_likelihood);
         detection_hypotheses.add(multi_bernoulli);
     }

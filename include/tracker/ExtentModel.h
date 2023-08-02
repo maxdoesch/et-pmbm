@@ -35,6 +35,7 @@ namespace tracker
             
         private:
             void _merge(GIW& e_model, double const weights[], GIW const e_models[], int components);
+            void _prune(GIW& e_model, double const weights[], GIW const e_models[], int components);
 
             double _v;
             Eigen::Matrix2d _V;

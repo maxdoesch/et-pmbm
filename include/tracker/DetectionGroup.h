@@ -24,7 +24,7 @@ namespace tracker
             std::size_t const _d_size;
             std::size_t const _b_size;
 
-            int const _m_assignments = 1;
+            int const _m_assignments = 3;
 
             MurtyMiller<double>::WeightMatrix _cost_matrix;
             std::vector<std::vector<Bernoulli>> _bernoulli_matrix;

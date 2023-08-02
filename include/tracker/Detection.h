@@ -1,5 +1,7 @@
 #pragma once
 
+#include "validation/ValidationModel.h"
+
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/common/centroid.h>
@@ -18,11 +20,21 @@ namespace tracker
             Eigen::Vector2d const& mean() const;
             Eigen::Matrix2d const& covariance() const;
 
+            validation::ValidationModel* getValidationModel() const;
+
         private:
             pcl::PointCloud<pcl::PointXYZ>::Ptr _measurements;
 
             Eigen::Vector2d _mean;
             Eigen::Matrix2d _covariance;
+    };
+
+    class Partition
+    {
+        public:
+            std::vector<Cluster> detections;
+
+            void getValidationModels(std::vector<validation::ValidationModel*>& models) const;
     };
 }
 

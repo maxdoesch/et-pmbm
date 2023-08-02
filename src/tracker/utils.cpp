@@ -105,29 +105,51 @@ void merge_inverse_wishart(double& v_m, Eigen::Matrix2d& V_m, double const weigh
     V_m = t_weight * (v_m - 3) * comp_1.inverse();
 }
 
-double sum_log_weights(double l_weights[], int const& components)
+double sum_log_weights(double const l_weights[], int const& components)
 {
-    double max_l_weight = 0;
+    double min_l_weight = std::numeric_limits<double>::infinity();
     double weight_sum = 0;
 
     for(int i = 0; i < components; i++)
     {
-        if(l_weights[i] < max_l_weight)
-            max_l_weight = l_weights[i];
+        if(l_weights[i] < min_l_weight)
+            min_l_weight = l_weights[i];
     }
 
     for(int i = 0; i < components; i++)
     {
-        if(l_weights[i] != max_l_weight)
-            weight_sum += std::exp(l_weights[i] - max_l_weight);
+        if(l_weights[i] != min_l_weight)
+            weight_sum += std::exp(l_weights[i] - min_l_weight);
     }
 
-    double l_weight_sum = max_l_weight + std::log(1 + weight_sum);
+    double l_weight_sum = min_l_weight + std::log(1 + weight_sum);
     /*
     for(int i = 0; i < components; i++)
     {
         l_weights[i] = l_weights[i] - max_l_weight - l_weight_sum;
     }*/
+
+    return l_weight_sum;
+}
+
+double sum_log_weights(std::vector<double> const& l_weights)
+{
+    double min_l_weight = std::numeric_limits<double>::infinity();
+    double weight_sum = 0;
+
+    for(auto const& l_weight : l_weights)
+    {
+        if(l_weight < min_l_weight)
+            min_l_weight = l_weight;
+    }
+
+    for(auto const& l_weight : l_weights)
+    {
+        if(l_weight != min_l_weight)
+            weight_sum += std::exp(l_weight - min_l_weight);
+    }
+
+    double l_weight_sum = min_l_weight + std::log(1 + weight_sum);
 
     return l_weight_sum;
 }

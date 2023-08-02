@@ -126,13 +126,21 @@ void merge_gaussian()
 
 void merge_inverse_wishart()
 {
-    double weight_1 = 0.8;
-    double v_1 = 6;
-    Eigen::Matrix2d V_1 = Eigen::Matrix2d::Identity() * 2;
+    double weight_1 = 0.176876;
+    double v_1 = 9;
+    Eigen::Matrix2d V_1;
+    V_1(0,0) = 155.286;
+    V_1(0,1) = 38.4746;
+    V_1(1,0) = 38.4746;
+    V_1(1,1) = 12.8894;
 
-    double weight_2 = 0.2;
-    double v_2 = 5;
-    Eigen::Matrix2d V_2 = Eigen::Matrix2d::Identity() * 3;
+    double weight_2 = 0.823124;
+    double v_2 = 9;
+    Eigen::Matrix2d V_2;
+    V_2(0,0) = 82.8919;
+    V_2(0,1) = -27.4993;
+    V_2(1,0) = -27.4993;
+    V_2(1,1) = 12.8894;
 
     double weight[] = {weight_1, weight_2};
     double v[] = {v_1, v_2};

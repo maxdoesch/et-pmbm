@@ -46,4 +46,6 @@ void merge_gaussian(Eigen::Vector4d& m_m, Eigen::Matrix4d& P_m, double const wei
 
 void merge_inverse_wishart(double& v_m, Eigen::Matrix2d& V_m, double const weight[], double const v[], Eigen::Matrix2d const V[], int const& components);
 
-double sum_log_weights(double l_weights[], int const& components);
+double sum_log_weights(double const l_weights[], int const& components);
+
+double sum_log_weights(std::vector<double> const& l_weights);

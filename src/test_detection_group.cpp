@@ -50,7 +50,29 @@ int main(int argc, char** argv)
     double const time_step = 0.1;
 
     simulator::Simulator simulator(time_step, 40);
+
+    //Eigen::Matrix<double, 5, 1> i_state = Eigen::Matrix<double, 5, 1>::Zero();
+    //i_state[2] = 0.2;
+    //i_state[3] = 0;
+    //i_state[4] = M_1_PI;
+    //simulator::KinematicModel* k_model = new simulator::ConstantVelocity(i_state);
+    //simulator::ExtentModel* e_model = new simulator::Ellipse(2., 1., 30);
+    //simulator::Target* target = new simulator::GenericTarget(k_model, e_model, 1, 5);
+    //simulator.addTarget(target);
+
+    //i_state = Eigen::Matrix<double, 5, 1>::Zero();
+    //i_state[0] = -3;
+    //i_state[1] = -3;
+    //i_state[2] = 0.2;
+    //i_state[3] = 0.2;
+    //i_state[4] = M_1_PI / 4.;
+    //k_model = new simulator::ConstantVelocity(i_state);
+    //e_model = new simulator::Ellipse(1.5, 0.7, 30);
+    //target = new simulator::GenericTarget(k_model, e_model, 8, 15);
+    //simulator.addTarget(target);
+
     simulator.addNRandomTargets(4);
+
 
     validation::Visualization vizualization(time_step);
 
@@ -96,9 +118,10 @@ int main(int argc, char** argv)
         mb.predict(time_step);
         mb.prune(0.1);
 
-        mb.getValidationModels(models);
-        //ppp.getValidationModels(models);
+        ppp.getValidationModels(models);
         simulator.getValidationModels(models);
+        mb.getValidationModels(models);
+        
 
         //vizualization.print(models);
         if(!vizualization.draw(measurements, models))

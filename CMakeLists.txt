@@ -36,6 +36,7 @@ add_executable(test_distribution_merging src/test_distribution_merging.cpp src/t
 add_executable(test_bernoulli src/test_bernoulli.cpp src/simulator/Target.cpp src/simulator/Simulator.cpp src/validation/Visualization.cpp src/validation/ValidationModel.cpp src/tracker/utils.cpp src/tracker/KinematicModel.cpp src/tracker/Detection.cpp src/tracker/ExtentModel.cpp src/tracker/Bernoulli.cpp)
 add_executable(test_ppp src/test_ppp.cpp src/simulator/Target.cpp src/simulator/Simulator.cpp src/validation/Visualization.cpp src/validation/ValidationModel.cpp src/tracker/utils.cpp src/tracker/KinematicModel.cpp src/tracker/Detection.cpp src/tracker/ExtentModel.cpp src/tracker/Bernoulli.cpp src/tracker/PoissonPointProcess.cpp)
 add_executable(test_detection_group src/test_detection_group.cpp src/simulator/Target.cpp src/simulator/Simulator.cpp src/validation/Visualization.cpp src/validation/ValidationModel.cpp src/tracker/utils.cpp src/tracker/KinematicModel.cpp src/tracker/Detection.cpp src/tracker/ExtentModel.cpp src/tracker/Bernoulli.cpp src/tracker/PoissonPointProcess.cpp src/tracker/DetectionGroup.cpp)
+add_executable(test_multi_bernoulli_mixture src/test_multi_bernoulli_mixture.cpp src/simulator/Target.cpp src/simulator/Simulator.cpp src/validation/Visualization.cpp src/validation/ValidationModel.cpp src/tracker/utils.cpp src/tracker/KinematicModel.cpp src/tracker/Detection.cpp src/tracker/ExtentModel.cpp src/tracker/Bernoulli.cpp src/tracker/PoissonPointProcess.cpp src/tracker/DetectionGroup.cpp src/tracker/Group.cpp src/tracker/Hypothesis.cpp)
 
 
 
@@ -66,6 +67,13 @@ target_link_libraries(test_ppp
 )
 
 target_link_libraries(test_detection_group
+    ${OpenCV_LIBS}
+    ${PCL_LIBRARIES}
+    ${Boost_LIBRARIES}
+    Eigen3::Eigen
+)
+
+target_link_libraries(test_multi_bernoulli_mixture
     ${OpenCV_LIBS}
     ${PCL_LIBRARIES}
     ${Boost_LIBRARIES}
