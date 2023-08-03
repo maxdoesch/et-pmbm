@@ -186,7 +186,7 @@ void MultiBernoulli::operator=(MultiBernoulli const& multi_bernoulli)
 
 bool MultiBernoulli::operator<(MultiBernoulli const& other) const
 {
-    return _weight < other._weight;
+    return _weight > other._weight;
 }
 
 void MultiBernoulliMixture::predict(double ts)
@@ -300,8 +300,6 @@ void MultiBernoulliMixture::normalize()
 
     for(auto const& multi_bernoulli : _multi_bernoullis)
     {
-        if(multi_bernoulli.getWeight() < -1000)
-            std::cout << "" << std::endl;
         l_weights.push_back(multi_bernoulli.getWeight());
     }
     
@@ -310,9 +308,6 @@ void MultiBernoulliMixture::normalize()
     for(auto& multi_bernoulli : _multi_bernoullis)
     {
         double normal_weight = multi_bernoulli.getWeight() - l_weight_sum;
-
-        if(normal_weight < -2000)
-            std::cout << "" << std::endl;
 
         multi_bernoulli.setWeight(normal_weight);
     }

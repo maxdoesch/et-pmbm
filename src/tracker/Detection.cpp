@@ -46,7 +46,7 @@ Eigen::Matrix2d const& Cluster::covariance() const
     return _covariance;
 }
 
-validation::ValidationModel* Cluster::getValidationModel() const
+validation::ValidationModel* Cluster::getValidationModel(cv::Scalar const& color) const
 {
     Eigen::Matrix2d covariance = 4 * _covariance / _measurements->points.size() + Eigen::Matrix2d::Identity() * 0.0001;
 
@@ -75,13 +75,17 @@ validation::ValidationModel* Cluster::getValidationModel() const
     validation::ConstantVelocity* cv = new validation::ConstantVelocity(state);
     validation::RateModel* rate_model = new validation::RateModel(_measurements->points.size());
 
-    return new validation::GenericValidationModel(cv, ellipse, rate_model, CV_RGB(255, 255, 0));
+    return new validation::GenericValidationModel(cv, ellipse, rate_model, color);
 }
 
 void Partition::getValidationModels(std::vector<validation::ValidationModel*>& models) const
 {
+    int r = (double)std::rand() / RAND_MAX * 255;
+    int g = (double)std::rand() / RAND_MAX * 255;
+    int b = (double)std::rand() / RAND_MAX * 255;
+
     for(auto const& detection : detections)
     {
-        models.push_back(detection.getValidationModel());
+        models.push_back(detection.getValidationModel(CV_RGB(r, g, b)));
     }
 }

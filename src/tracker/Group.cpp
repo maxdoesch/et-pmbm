@@ -10,15 +10,11 @@ Group::Group(std::vector<Partition> const& partitions, std::vector<Bernoulli> co
 
 }
 
-MultiBernoulliMixture Group::solve() const
+void Group::solve(MultiBernoulliMixture& group_hypotheses) const
 {
-    MultiBernoulliMixture multi_bernoulli_mixture;
-
     for(auto const& partition : _partitions)
     {
         DetectionGroup detection_group(partition.detections, _bernoullis, _ppp);
-        detection_group.solve(multi_bernoulli_mixture);
+        detection_group.solve(group_hypotheses);
     }
-
-    return multi_bernoulli_mixture;
 }

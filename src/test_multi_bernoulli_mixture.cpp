@@ -63,7 +63,7 @@ int main(int argc, char** argv)
     double const time_step = 0.1;
 
     simulator::Simulator simulator(time_step, 40);
-    //simulator.addNRandomTargets(10);
+    simulator.addNRandomTargets(2);
     
     Eigen::Matrix<double, 5, 1> i_state = Eigen::Matrix<double, 5, 1>::Zero();
     i_state[0] = -2;
@@ -93,6 +93,9 @@ int main(int argc, char** argv)
     tracker::PPP ppp;
     ppp.predict(time_step);
 
+    std::chrono::nanoseconds::rep duration = 0;
+    int i = 0;
+
     while(!simulator.endOfSimulation())
     {
         pcl::PointCloud<pcl::PointXYZ>::Ptr measurements(new pcl::PointCloud<pcl::PointXYZ>);
@@ -100,12 +103,15 @@ int main(int argc, char** argv)
 
         simulator.step(measurements);
 
+        auto start = std::chrono::high_resolution_clock::now();
+
         if(measurements->size() > 0)
         {
             std::vector<tracker::Partition> partitions;
             partition_extractor(measurements, partitions);
+            /*
             for(auto const& partition : partitions)
-                partition.getValidationModels(models);
+                partition.getValidationModels(models);*/
 
             tracker::MultiBernoulliMixture new_mbm;
             for(auto const& multi_bernoulli : mbm.getMultiBernoullis())
@@ -114,26 +120,30 @@ int main(int argc, char** argv)
                 tracker::Group group(partitions, multi_bernoulli.getBernoullis(), ppp);
                 groups.push_back(group);
 
-                tracker::Hypothesis hypothesis(multi_bernoulli.getWeight(), groups);
-                hypothesis.solve();
+                tracker::Hypotheses hypothesis(multi_bernoulli.getWeight(), groups);
                 
-                new_mbm.add(hypothesis.getMostLikelyMixture(3));
+                new_mbm.add(hypothesis.getMostLikelyHypotheses(3));
             }
             mbm = new_mbm;
 
             mbm.normalize();
+
+
+            auto stop = std::chrono::high_resolution_clock::now();
+            duration += std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
+            i++;
         }
 
         mbm.predict(time_step);
 
-        //std::cout << "-------------------------------------------------------------------" << std::endl; 
-        //mbm.print();
+        std::cout << "-------------------------------------------------------------------" << std::endl; 
+        mbm.print();
 
         mbm.prune(std::log(0.05));
         mbm.capping(5);
         mbm.recycle(0.1);
 
-        //mbm.print();
+        mbm.print();
 
         std::vector<tracker::Bernoulli> estimate = mbm.estimate(0.5);
 
@@ -152,4 +162,6 @@ int main(int argc, char** argv)
             delete v_model;
         }
     }
+
+    std::cout << "Avg. processing time: " << duration / i / 1000000. << "ms" << std::endl;
 }

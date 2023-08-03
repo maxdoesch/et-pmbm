@@ -20,7 +20,7 @@ namespace tracker
             Eigen::Vector2d const& mean() const;
             Eigen::Matrix2d const& covariance() const;
 
-            validation::ValidationModel* getValidationModel() const;
+            validation::ValidationModel* getValidationModel(cv::Scalar const& color) const;
 
         private:
             pcl::PointCloud<pcl::PointXYZ>::Ptr _measurements;
