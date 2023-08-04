@@ -23,6 +23,7 @@ namespace tracker
             GIW();
             explicit GIW(GIW const* e_model);
             explicit GIW(double const weights[], GIW const e_models[], int components);
+            explicit GIW(std::vector<double> const& weights, std::vector<GIW> const& e_models);
             explicit GIW(Eigen::Vector4d const& m, Eigen::Matrix4d const& P, Eigen::Matrix2d const& V);
             ~GIW();
             void operator=(GIW const& e_model);
@@ -35,7 +36,9 @@ namespace tracker
             
         private:
             void _merge(GIW& e_model, double const weights[], GIW const e_models[], int components);
-            void _prune(GIW& e_model, double const weights[], GIW const e_models[], int components);
+            void _merge(std::vector<double> const& weights, std::vector<GIW> const& e_models);
+            void _selectMostLikely(GIW& e_model, double const weights[], GIW const e_models[], int components);
+            void _selectMostLikely(std::vector<double> const& weights, std::vector<GIW> const& e_models);
 
             double _v;
             Eigen::Matrix2d _V;
@@ -50,9 +53,10 @@ namespace tracker
     {
         public:
             RateModel();
-            explicit RateModel(double alpha, double beta);
             RateModel(RateModel const& r_model);
+            explicit RateModel(double alpha, double beta);
             explicit RateModel(double const weights[], RateModel const r_models[], int components);
+            explicit RateModel(std::vector<double> const& weights, std::vector<RateModel> const& r_models);
             void operator=(RateModel const& r_model);
 
             void predict();
@@ -64,6 +68,7 @@ namespace tracker
 
         private:
             void _merge(RateModel& r_model_m, double const weights[], RateModel const r_models[], int const& components) const;
+            void _merge(std::vector<double> const& weights, std::vector<RateModel> const& r_models);
 
             double _alpha = 1;
             double _beta = 1;

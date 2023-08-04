@@ -57,7 +57,8 @@ namespace tracker
 
         private:
             std::vector<PoissonComponent> _p_components;
-
             BirthModel _b_model;
+
+            double const _min_likelihood = 0.0001;
     };
 }

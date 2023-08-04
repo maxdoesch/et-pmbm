@@ -35,6 +35,38 @@ namespace tracker
             std::vector<Cluster> detections;
 
             void getValidationModels(std::vector<validation::ValidationModel*>& models) const;
+            bool operator==(Partition const& other) const
+            {
+                bool same = true;
+
+                if(detections.size() != other.detections.size())
+                {
+                    same = false;
+                }
+                else
+                {
+                    for(auto const& detection : detections)
+                    {
+                        bool found_detection = false;
+                        for(auto const& other_detection : other.detections)
+                        {
+                            if(detection.mean().isApprox(detection.mean()) && detection.covariance().isApprox(other_detection.covariance()))
+                            {
+                                found_detection = true;
+                                break;
+                            }
+                        }
+
+                        if(!found_detection)
+                        {
+                            same = false;
+                            break;
+                        }
+                    }
+                }
+
+                return same;
+            }
     };
 }
 

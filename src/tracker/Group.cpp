@@ -16,5 +16,6 @@ void Group::solve(MultiBernoulliMixture& group_hypotheses) const
     {
         DetectionGroup detection_group(partition.detections, _bernoullis, _ppp);
         detection_group.solve(group_hypotheses);
+        detection_group.print();
     }
 }

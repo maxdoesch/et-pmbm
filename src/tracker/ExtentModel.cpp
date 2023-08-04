@@ -26,7 +26,7 @@ template <class KinematicTemplate> GIW<KinematicTemplate>::GIW(double const weig
     _merge(*this, weights, e_models, components);
 
     if(_v < 2 * (_dof + 1))
-        _prune(*this, weights, e_models, components);
+        _selectMostLikely(*this, weights, e_models, components);
 
     KinematicTemplate* k_models = new KinematicTemplate[components];
 
@@ -38,6 +38,14 @@ template <class KinematicTemplate> GIW<KinematicTemplate>::GIW(double const weig
     _k_model = KinematicTemplate(weights, k_models, components);
 
     delete[] k_models;
+}
+
+template <class KinematicTemplate> GIW<KinematicTemplate>::GIW(std::vector<double> const& weights, std::vector<GIW> const& e_models)
+{
+    _merge(weights, e_models);
+
+    if(_v < 2 * (_dof + 1))
+        _selectMostLikely(weights, e_models);
 }
 
 template <class KinematicTemplate> GIW<KinematicTemplate>::GIW(Eigen::Vector4d const& m, Eigen::Matrix4d const& P, Eigen::Matrix2d const& V) : 
@@ -179,7 +187,58 @@ template <class KinematicTemplate> void GIW<KinematicTemplate>::_merge(GIW<Kinem
     e_model._V = t_weight * (e_model._v - 3) * comp_1.inverse();
 }
 
-template <class KinematicTemplate> void  GIW<KinematicTemplate>::_prune(GIW& e_model, double const weights[], GIW const e_models[], int components)
+template <class KinematicTemplate> void GIW<KinematicTemplate>::_merge(std::vector<double> const& weights, std::vector<GIW> const& e_models)
+{
+    double t_weight = 0;
+    Eigen::Matrix2d comp_1 = Eigen::Matrix2d::Zero();
+    double comp_2 = 0;
+    double comp_3 = 0;
+    double v_max = 0;
+
+    _k_model = KinematicTemplate();
+
+    auto weights_it = weights.begin();
+    auto e_models_it = e_models.begin();
+    for(; weights_it < weights.end();)
+    {
+        t_weight += *weights_it;
+
+        comp_1 += *weights_it * (e_models_it->_v - 3) * e_models_it->_V.inverse();
+        comp_2 += *weights_it * (boost::math::digamma((e_models_it->_v - 3) / 2.) + boost::math::digamma((e_models_it->_v - 4) / 2.));
+        comp_3 += *weights_it * std::log(e_models_it->_V.determinant());
+
+        if(e_models_it->_v > v_max)
+            v_max = e_models_it->_v;
+
+        _k_model.m += *weights_it * e_models_it->_k_model.m;
+
+        ; weights_it++; 
+        e_models_it++;
+    }
+
+    double bias = 2 * t_weight * std::log(t_weight) - t_weight * std::log(comp_1.determinant()) + comp_2 - comp_3;
+
+    double v_min = 2 * _dof + 2;
+    _v = boost::math::tools::newton_raphson_iterate(log_digamma_two_dof(t_weight, bias), e_models[0]._v, 4., v_max * 1.5, 31);
+    _V = t_weight * (_v - 3) * comp_1.inverse();
+
+    _k_model.m /= t_weight;
+
+    weights_it = weights.begin();
+    e_models_it = e_models.begin();
+    for(; weights_it < weights.end();)
+    {
+        Eigen::VectorXd diff = e_models_it->_k_model.m - _k_model.m;
+        _k_model.P += *weights_it * (e_models_it->_k_model.P + diff * diff.transpose());
+
+        weights_it++; 
+        e_models_it++;
+    }
+
+    _k_model.P /= t_weight;
+}
+
+template <class KinematicTemplate> void  GIW<KinematicTemplate>::_selectMostLikely(GIW& e_model, double const weights[], GIW const e_models[], int components)
 {
     double max_weight = 0;
 
@@ -194,6 +253,26 @@ template <class KinematicTemplate> void  GIW<KinematicTemplate>::_prune(GIW& e_m
     }
 }
 
+template <class KinematicTemplate> void GIW<KinematicTemplate>::_selectMostLikely(std::vector<double> const& weights, std::vector<GIW> const& e_models)
+{
+    double max_weight = 0;
+
+    auto weights_it = weights.begin();
+    auto e_models_it = e_models.begin();
+    for(; weights_it < weights.end();)
+    {
+        if(*weights_it > max_weight)
+        {
+            max_weight = *weights_it;
+            _v = e_models_it->_v;
+            _V = e_models_it->_V;
+        }
+
+        weights_it++;
+        e_models_it++;
+    }
+}
+
 RateModel::RateModel() {};
 
 RateModel::RateModel(double alpha, double beta) : _alpha{alpha}, _beta{beta} {}
@@ -203,6 +282,11 @@ RateModel::RateModel(RateModel const& r_model) : _alpha{r_model._alpha}, _beta{r
 RateModel::RateModel(double const weights[], RateModel const r_models[], int components)
 {
     _merge(*this, weights, r_models, components);
+}
+
+RateModel::RateModel(std::vector<double> const& weights, std::vector<RateModel> const& r_models)
+{
+    _merge(weights, r_models);
 }
 
 void RateModel::predict()
@@ -278,4 +362,29 @@ void RateModel::_merge(RateModel& r_model_m, double const weights[], RateModel c
     r_model_m._alpha = boost::math::tools::newton_raphson_iterate(log_digamma(bias), r_models[0]._alpha, 0.0, alpha_max * 1.5, 31);
 
     r_model_m._beta = r_model_m._alpha / (1 / t_weight * comp_2);
+}
+
+void RateModel::_merge(std::vector<double> const& weights, std::vector<RateModel> const& r_models)
+{
+    double t_weight = 0;
+    double comp_1 = 0;
+    double comp_2 = 0;
+
+    double alpha_max = 0;
+
+    auto weights_it = weights.begin();
+    auto r_models_it = r_models.begin();
+    for(; weights_it < weights.end();)
+    {
+        t_weight += *weights_it;
+
+        comp_1 += *weights_it * (boost::math::digamma(r_models_it->_alpha) - std::log(r_models_it->_beta));
+        comp_2 += *weights_it * r_models_it->_alpha / r_models_it->_beta;
+
+        if(r_models_it->_alpha > alpha_max)
+            alpha_max = r_models_it->_alpha;
+
+        weights_it++; 
+        r_models_it++;
+    }
 }

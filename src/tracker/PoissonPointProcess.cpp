@@ -26,6 +26,7 @@ void PPP::update_missed_detection()
     }
 }
 
+/*
 Bernoulli PPP::detection_likelihood(Cluster const& detection, double& likelihood) const
 {
     int total_components = _p_components.size();
@@ -65,6 +66,78 @@ Bernoulli PPP::detection_likelihood(Cluster const& detection, double& likelihood
     delete[] r_models;
     delete[] l_weights;
     delete[] weights;
+
+    likelihood = l_weight_sum;
+
+    return bernoulli;
+}*/
+
+Bernoulli PPP::detection_likelihood(Cluster const& detection, double& likelihood) const
+{
+    int n_components = _p_components.size();
+    std::vector<GIW<ConstantVelocity>> e_models;
+    std::vector<RateModel> r_models;
+    std::vector<double> l_weights;
+    std::vector<double> n_weights;
+    e_models.reserve(n_components);
+    r_models.reserve(n_components);
+    l_weights.reserve(n_components);
+    n_weights.reserve(n_components);
+
+    for(auto const& component : _p_components)
+    {
+        GIW<ConstantVelocity> e_model;
+        RateModel r_model;
+        double l_weight = component.detection_likelihood(detection, e_model, r_model);
+        l_weight += std::log(component.getWeight()) + std::log(p_detection);
+
+        e_models.push_back(e_model);
+        r_models.push_back(r_model);
+        l_weights.push_back(l_weight);
+    }
+
+    double l_weight_sum = sum_log_weights(l_weights);
+    
+    for(auto& l_weight : l_weights)
+    {
+        l_weight -= l_weight_sum;
+        double weight = std::exp(l_weight);
+        n_weights.push_back(weight);
+    }
+
+    //prune unlikely associations
+    auto e_models_it = e_models.begin();
+    auto r_models_it = r_models.begin();
+    auto l_weights_it = l_weights.begin();
+    auto n_weights_it = n_weights.begin();
+
+    for(; e_models_it < e_models.end();)
+    {
+        if((*n_weights_it) < _min_likelihood)
+        {
+            e_models_it = e_models.erase(e_models_it);
+            r_models_it = r_models.erase(r_models_it);
+            l_weights_it = l_weights.erase(l_weights_it);
+            n_weights_it = n_weights.erase(n_weights_it);
+        }
+        else
+        {
+            e_models_it++;
+            r_models_it++;
+            l_weights_it++;
+            n_weights_it++;
+        }
+    }
+
+    GIW<ConstantVelocity>* e_model = new GIW<ConstantVelocity>(n_weights, e_models);
+    RateModel r_model(n_weights, r_models);
+
+    double p_existence = 1;
+    
+    if(detection.size() == 1)
+        p_existence = 1. / (std::exp(std::log(clutter_rate) - l_weight_sum) + 1);
+
+    Bernoulli bernoulli(p_existence, e_model, r_model);
 
     likelihood = l_weight_sum;
 
@@ -172,8 +245,8 @@ BirthModel::BirthModel()
             init_state[1] = y;
 
             GIW<ConstantVelocity> e_model(init_state, init_state_covariance, init_extent_matrix);
-            RateModel r_model(50, 5);
-            _birth_components.push_back(PoissonComponent(0.5 / (_n_components * _n_components), e_model, r_model));
+            RateModel r_model(500, 5);
+            _birth_components.push_back(PoissonComponent(0.00000001 / (_n_components * _n_components), e_model, r_model));
         }
     }
 

@@ -48,12 +48,37 @@ void cluster_extractor(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements, std::ve
 
 void partition_extractor(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements, std::vector<tracker::Partition>& partitions)
 {
-    for(int i = 3; i > 0; i--)
-    {
-        tracker::Partition partition;
-        cluster_extractor(measurements, partition.detections, 0.5 * i);
+    int n_detections = 0;
 
-        partitions.push_back(partition);
+    for(int i = 15; i > 1; i--)
+    {
+        tracker::Partition new_partition;
+        cluster_extractor(measurements, new_partition.detections, 0.15 * i);
+
+        if(n_detections < new_partition.detections.size())
+        {
+            n_detections = new_partition.detections.size();
+
+            if(new_partition.detections.size() < 2)  
+                std::cout << "";
+
+            partitions.push_back(new_partition);
+        }
+            
+        /*
+        bool same = false;
+        for(auto const& old_partition : partitions)
+        {
+            if(old_partition == new_partition)
+            {
+                same = true;
+                break;
+            }
+        }
+
+        if(!same)
+            partitions.push_back(new_partition);
+        */
     }
 }
 
@@ -63,11 +88,11 @@ int main(int argc, char** argv)
     double const time_step = 0.1;
 
     simulator::Simulator simulator(time_step, 40);
-    simulator.addNRandomTargets(2);
+    //simulator.addNRandomTargets(2);
     
     Eigen::Matrix<double, 5, 1> i_state = Eigen::Matrix<double, 5, 1>::Zero();
     i_state[0] = -2;
-    i_state[1] = -1.5;
+    i_state[1] = 0;
     i_state[2] = 0.3;
     i_state[3] = 0;
     i_state[4] = 0;
@@ -77,18 +102,17 @@ int main(int argc, char** argv)
     simulator.addTarget(target);
 
     i_state[0] = 2;
-    i_state[1] = 1.5;
+    i_state[1] = 0;
     i_state[2] = -0.3;
     i_state[3] = 0;
     k_model = new simulator::ConstantVelocity(i_state);
     e_model = new simulator::Ellipse(1, 1, 50);
-    target = new simulator::GenericTarget(k_model, e_model, 2, 20);
+    target = new simulator::GenericTarget(k_model, e_model, 1, 20);
     simulator.addTarget(target);
 
     validation::Visualization visualization(time_step);
 
     tracker::MultiBernoulliMixture mbm;
-    mbm.add(tracker::MultiBernoulli());
 
     tracker::PPP ppp;
     ppp.predict(time_step);
@@ -105,12 +129,17 @@ int main(int argc, char** argv)
 
         auto start = std::chrono::high_resolution_clock::now();
 
+        if(mbm.size() == 0)
+            mbm.add(tracker::MultiBernoulli());
+
+        mbm.predict(time_step);
+
         if(measurements->size() > 0)
         {
             std::vector<tracker::Partition> partitions;
             partition_extractor(measurements, partitions);
-            /*
-            for(auto const& partition : partitions)
+            
+            /*for(auto const& partition : partitions)
                 partition.getValidationModels(models);*/
 
             tracker::MultiBernoulliMixture new_mbm;
@@ -134,18 +163,18 @@ int main(int argc, char** argv)
             i++;
         }
 
-        mbm.predict(time_step);
-
         std::cout << "-------------------------------------------------------------------" << std::endl; 
-        mbm.print();
+        //mbm.print();
 
-        mbm.prune(std::log(0.05));
+        mbm.prune(-10);
         mbm.capping(5);
-        mbm.recycle(0.1);
+        mbm.recycle(0.5);
+
+        mbm.normalize();
 
         mbm.print();
 
-        std::vector<tracker::Bernoulli> estimate = mbm.estimate(0.5);
+        std::vector<tracker::Bernoulli> estimate = mbm.estimate(0.89);
 
         ppp.getValidationModels(models);
         simulator.getValidationModels(models);
