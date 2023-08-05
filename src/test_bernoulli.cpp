@@ -50,7 +50,6 @@ int main(int argc, char** argv)
             simulator.getValidationModels(models);
 
             tracker::Cluster detection(measurements);
-            detection.computeMeanCov();
 
             tracker::Bernoulli detection_bernoulli(bernoulli);
             double detection_likelihood = detection_bernoulli.detection_likelihood(detection);

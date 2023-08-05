@@ -44,7 +44,6 @@ int main(int argc, char** argv)
             simulator.getValidationModels(models);
 
             tracker::Cluster detection(measurements);
-            detection.computeMeanCov();
             extentModel.update(detection);
             rateModel.update(detection);
 

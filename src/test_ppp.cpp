@@ -45,7 +45,6 @@ int main(int argc, char** argv)
         return 0;
 
     tracker::Cluster detection(measurements);
-    detection.computeMeanCov();
 
 
     double detection_likelihood;

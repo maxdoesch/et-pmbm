@@ -38,7 +38,6 @@ void cluster_extractor(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements, std::ve
         cluster_measurements->is_dense = false;
 
         tracker::Cluster detection(cluster_measurements);
-        detection.computeMeanCov();
 
         detections.push_back(detection);
     }

@@ -40,7 +40,6 @@ void cluster_extractor(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements, std::ve
         cluster_measurements->is_dense = false;
 
         tracker::Cluster detection(cluster_measurements);
-        detection.computeMeanCov();
 
         detections.push_back(detection);
     }
@@ -52,33 +51,14 @@ void partition_extractor(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements, std::
 
     for(int i = 15; i > 1; i--)
     {
-        tracker::Partition new_partition;
-        cluster_extractor(measurements, new_partition.detections, 0.15 * i);
+        tracker::Partition new_partition(measurements, 0.15 * i);
 
         if(n_detections < new_partition.detections.size())
         {
             n_detections = new_partition.detections.size();
 
-            if(new_partition.detections.size() < 2)  
-                std::cout << "";
-
             partitions.push_back(new_partition);
         }
-            
-        /*
-        bool same = false;
-        for(auto const& old_partition : partitions)
-        {
-            if(old_partition == new_partition)
-            {
-                same = true;
-                break;
-            }
-        }
-
-        if(!same)
-            partitions.push_back(new_partition);
-        */
     }
 }
 

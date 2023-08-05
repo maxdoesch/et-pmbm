@@ -8,22 +8,32 @@
 
 #include <Eigen/Dense>
 
+#include <vector>
+
 namespace tracker
 {
     class Cluster
     {
         public:
-            explicit Cluster(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements);
+            explicit Cluster(pcl::PointCloud<pcl::PointXYZ>::Ptr const& measurements);
+            explicit Cluster(pcl::PointCloud<pcl::PointXYZ>::Ptr const& measurements, pcl::PointCloud<pcl::PointXYZ>::Ptr const& two_dim_measurements);
+            Cluster(Cluster const& cluster);
+            Cluster& operator=(Cluster const& cluster) = delete;
             
-            void computeMeanCov();
             int size() const;
             Eigen::Vector2d const& mean() const;
             Eigen::Matrix2d const& covariance() const;
+            pcl::PointCloud<pcl::PointXYZ>::Ptr measurements() const;
+            pcl::PointCloud<pcl::PointXYZ>::Ptr two_dim_measurements() const;
+
 
             validation::ValidationModel* getValidationModel(cv::Scalar const& color) const;
 
         private:
+            void _computeMeanCov();
+
             pcl::PointCloud<pcl::PointXYZ>::Ptr _measurements;
+            pcl::PointCloud<pcl::PointXYZ>::Ptr _two_dim_measurements;
 
             Eigen::Vector2d _mean;
             Eigen::Matrix2d _covariance;
@@ -32,41 +42,25 @@ namespace tracker
     class Partition
     {
         public:
-            std::vector<Cluster> detections;
+            Partition(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements, double radius);
+            Partition(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements, pcl::PointCloud<pcl::PointXYZ>::Ptr two_dim_measurements, double radius);
+            Partition(Partition const& partition);
+            Partition& operator=(Partition const& partition) = delete;
 
             void getValidationModels(std::vector<validation::ValidationModel*>& models) const;
-            bool operator==(Partition const& other) const
-            {
-                bool same = true;
 
-                if(detections.size() != other.detections.size())
-                {
-                    same = false;
-                }
-                else
-                {
-                    for(auto const& detection : detections)
-                    {
-                        bool found_detection = false;
-                        for(auto const& other_detection : other.detections)
-                        {
-                            if(detection.mean().isApprox(detection.mean()) && detection.covariance().isApprox(other_detection.covariance()))
-                            {
-                                found_detection = true;
-                                break;
-                            }
-                        }
+            std::vector<Cluster> detections;
+    };
 
-                        if(!found_detection)
-                        {
-                            same = false;
-                            break;
-                        }
-                    }
-                }
+    class PartitionedParent
+    {
+        public:
+            explicit PartitionedParent(Cluster const& parent_cluster);
+            PartitionedParent(PartitionedParent const& partitioned_parent);
+            PartitionedParent& operator=(PartitionedParent const& partitioned_parent) = delete;
 
-                return same;
-            }
+            Cluster parent;
+            std::vector<Partition> partitions;
     };
 }
 

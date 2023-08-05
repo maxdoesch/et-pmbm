@@ -14,6 +14,8 @@ namespace tracker
     {
         public:
             explicit DetectionGroup(std::vector<Cluster> const& detections, std::vector<Bernoulli> const& prior_hypothesis, PPP const& ppp);
+            DetectionGroup(DetectionGroup const& detection_group) = delete;
+            DetectionGroup& operator=(DetectionGroup const& detection_group) = delete;
             ~DetectionGroup();
             
             void solve(MultiBernoulliMixture& detection_hypotheses);
