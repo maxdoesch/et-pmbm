@@ -223,14 +223,14 @@ validation::ValidationModel* PoissonComponent::getValidationModel() const
 
 BirthModel::BirthModel()
 {
-    
+ 
     Eigen::Matrix4d init_state_covariance = Eigen::Matrix4d::Zero();
-    init_state_covariance(0, 0) = _field_of_view_x / (_n_components + 1);
-    init_state_covariance(1, 1) = _field_of_view_y / (_n_components + 1);
+    init_state_covariance(0, 0) = pow(_field_of_view_x / (3 * (_n_components + 1)), 2);
+    init_state_covariance(1, 1) = pow(_field_of_view_y / (3 * (_n_components + 1)), 2);
 
     Eigen::Matrix2d init_extent_matrix = Eigen::Matrix2d::Zero(); 
-    init_extent_matrix(0, 0) = _field_of_view_x / (_n_components + 1);
-    init_extent_matrix(1, 1) = _field_of_view_y / (_n_components + 1);
+    init_extent_matrix(0, 0) = 1;
+    init_extent_matrix(1, 1) = 1;
     
     for(int i = 0; i < _n_components; i++)
     {
@@ -245,8 +245,8 @@ BirthModel::BirthModel()
             init_state[1] = y;
 
             GIW<ConstantVelocity> e_model(init_state, init_state_covariance, init_extent_matrix);
-            RateModel r_model(500, 5);
-            _birth_components.push_back(PoissonComponent(0.00000001 / (_n_components * _n_components), e_model, r_model));
+            RateModel r_model(2000, 5);
+            _birth_components.push_back(PoissonComponent(1e-10 / (_n_components * _n_components), e_model, r_model));
         }
     }
 
@@ -275,6 +275,22 @@ BirthModel::BirthModel()
 
     e_model = GIW<ConstantVelocity>(init_state, init_state_covariance, init_extent_matrix);
     r_model = RateModel(50, 5);
+    _birth_components.push_back(PoissonComponent(0.5, e_model, r_model));*/
+/*
+    Eigen::Matrix4d init_state_covariance = Eigen::Matrix4d::Zero();
+    init_state_covariance(0, 0) = pow(_field_of_view_x / 3, 2);
+    init_state_covariance(1, 1) = pow(_field_of_view_y / 3, 2);
+
+    Eigen::Matrix2d init_extent_matrix = Eigen::Matrix2d::Zero(); 
+    init_extent_matrix(0, 0) = 2;
+    init_extent_matrix(1, 1) = 2;
+
+    Eigen::Vector4d init_state = Eigen::Vector4d::Zero();
+    init_state[0] = 0;
+    init_state[1] = 0;
+
+    GIW<ConstantVelocity> e_model(init_state, init_state_covariance, init_extent_matrix);
+    RateModel r_model(5000, 5);
     _birth_components.push_back(PoissonComponent(0.5, e_model, r_model));*/
     
 }

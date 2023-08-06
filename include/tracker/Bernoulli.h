@@ -35,8 +35,8 @@ namespace tracker
     {
         public:
             MultiBernoulli() {};
-            MultiBernoulli(MultiBernoulli const& multi_bernoulli);
             explicit MultiBernoulli(std::vector<Bernoulli> const& bernoullis, double weight);
+            MultiBernoulli(MultiBernoulli const& multi_bernoulli);
             void operator=(MultiBernoulli const& multi_bernoulli);
 
             void predict(double ts);
@@ -46,6 +46,7 @@ namespace tracker
             std::vector<Bernoulli> const& getBernoullis() const;
             double getWeight() const;
             void setWeight(double weight);
+            int size() const;
 
             void getValidationModels(std::vector<validation::ValidationModel*>& models) const;
             void print() const;
@@ -60,6 +61,10 @@ namespace tracker
     class MultiBernoulliMixture
     {
         public:
+            MultiBernoulliMixture();
+            MultiBernoulliMixture(MultiBernoulliMixture const& multi_bernoulli_mixture);
+            void operator=(MultiBernoulliMixture const& multi_bernoulli_mixture);
+
             void predict(double ts);
             void prune(double threshold);
             void capping(int N);
@@ -76,7 +81,6 @@ namespace tracker
             std::vector<MultiBernoulli> selectMostLikely(int x) const;
             std::vector<MultiBernoulli> const& getMultiBernoullis();
             MultiBernoulli& operator[](int idx);
-            void operator=(MultiBernoulliMixture const& multi_bernoulli_mixture);
 
         private:
             std::vector<MultiBernoulli> _multi_bernoullis;

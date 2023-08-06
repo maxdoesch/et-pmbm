@@ -157,6 +157,11 @@ void MultiBernoulli::setWeight(double weight)
     _weight = weight;
 }
 
+int MultiBernoulli::size() const
+{
+    return _bernoullis.size();
+}
+
 void MultiBernoulli::getValidationModels(std::vector<validation::ValidationModel*>& models) const
 {
     for(auto const& bernoulli : _bernoullis)
@@ -187,6 +192,16 @@ void MultiBernoulli::operator=(MultiBernoulli const& multi_bernoulli)
 bool MultiBernoulli::operator<(MultiBernoulli const& other) const
 {
     return _weight > other._weight;
+}
+
+MultiBernoulliMixture::MultiBernoulliMixture()
+{
+
+}
+
+MultiBernoulliMixture::MultiBernoulliMixture(MultiBernoulliMixture const& multi_bernoulli_mixture) : _multi_bernoullis{multi_bernoulli_mixture._multi_bernoullis}
+{
+
 }
 
 void MultiBernoulliMixture::predict(double ts)

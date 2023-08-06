@@ -19,7 +19,7 @@ void cluster_extractor(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements, std::ve
     std::vector<pcl::PointIndices> cluster_indices;
     pcl::EuclideanClusterExtraction<pcl::PointXYZ> pcl_euclidean_cluster;
     pcl_euclidean_cluster.setClusterTolerance(1.5);
-    pcl_euclidean_cluster.setMinClusterSize(1);
+    pcl_euclidean_cluster.setMinClusterSize(3);
     pcl_euclidean_cluster.setSearchMethod(tree);
     pcl_euclidean_cluster.setInputCloud(measurements);
     pcl_euclidean_cluster.extract(cluster_indices);
@@ -98,20 +98,24 @@ int main(int argc, char** argv)
             cluster_extractor(measurements, detections);
 
             auto start = std::chrono::high_resolution_clock::now();
-            tracker::DetectionGroup detectionGroup(detections, mb.getBernoullis(), ppp);
-            
-            tracker::MultiBernoulliMixture mbm;
-            detectionGroup.solve(mbm);
-            auto stop = std::chrono::high_resolution_clock::now();
-            duration += std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
 
-            detectionGroup.print();
+            if(detections.size() > 0 || mb.size() > 0)
+            {
+                tracker::DetectionGroup detectionGroup(detections, mb.getBernoullis(), ppp);
+        
+                tracker::MultiBernoulliMixture mbm;
+                detectionGroup.solve(mbm);
+                auto stop = std::chrono::high_resolution_clock::now();
+                duration += std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
 
-            mb = mbm[0];
+                detectionGroup.print();
 
-            hypothesis_likelihood.push_back(std::make_pair(simulator.getTime(), mb.getWeight()));
+                mb = mbm[0];
 
-            i++;
+                hypothesis_likelihood.push_back(std::make_pair(simulator.getTime(), mb.getWeight()));
+
+                i++;
+            }
         }
 
         mb.predict(time_step);

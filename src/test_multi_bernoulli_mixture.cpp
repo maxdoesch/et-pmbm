@@ -72,8 +72,8 @@ int main(int argc, char** argv)
     
     Eigen::Matrix<double, 5, 1> i_state = Eigen::Matrix<double, 5, 1>::Zero();
     i_state[0] = -2;
-    i_state[1] = 0;
-    i_state[2] = 0.3;
+    i_state[1] = -2;
+    i_state[2] = 0.8;
     i_state[3] = 0;
     i_state[4] = 0;
     simulator::KinematicModel* k_model = new simulator::ConstantVelocity(i_state);
@@ -82,12 +82,21 @@ int main(int argc, char** argv)
     simulator.addTarget(target);
 
     i_state[0] = 2;
-    i_state[1] = 0;
+    i_state[1] = 1.5;
     i_state[2] = -0.3;
     i_state[3] = 0;
     k_model = new simulator::ConstantVelocity(i_state);
-    e_model = new simulator::Ellipse(1, 1, 50);
+    e_model = new simulator::Ellipse(1., 1, 50);
     target = new simulator::GenericTarget(k_model, e_model, 1, 20);
+    simulator.addTarget(target);
+
+    i_state[0] = 8;
+    i_state[1] = -1.5;
+    i_state[2] = 0;
+    i_state[3] = 0;
+    k_model = new simulator::ConstantVelocity(i_state);
+    e_model = new simulator::Ellipse(1, 1.5, 20);
+    target = new simulator::GenericTarget(k_model, e_model, 4, 20);
     simulator.addTarget(target);
 
     validation::Visualization visualization(time_step);
