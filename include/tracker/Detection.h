@@ -18,7 +18,7 @@ namespace tracker
             explicit Cluster(pcl::PointCloud<pcl::PointXYZ>::Ptr const& measurements);
             explicit Cluster(pcl::PointCloud<pcl::PointXYZ>::Ptr const& measurements, pcl::PointCloud<pcl::PointXYZ>::Ptr const& two_dim_measurements);
             Cluster(Cluster const& cluster);
-            Cluster& operator=(Cluster const& cluster) = delete;
+            Cluster& operator=(Cluster const& cluster);
             
             int size() const;
             Eigen::Vector2d const& mean() const;
@@ -42,10 +42,13 @@ namespace tracker
     class Partition
     {
         public:
+            Partition();
             Partition(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements, double radius);
             Partition(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements, pcl::PointCloud<pcl::PointXYZ>::Ptr two_dim_measurements, double radius);
             Partition(Partition const& partition);
-            Partition& operator=(Partition const& partition) = delete;
+            Partition& operator=(Partition const& partition);
+
+            void merge(Partition const& partition);
 
             void getValidationModels(std::vector<validation::ValidationModel*>& models) const;
 

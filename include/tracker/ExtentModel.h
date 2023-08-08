@@ -12,6 +12,7 @@ namespace tracker
             virtual ~ExtentModel() {};
             virtual void predict(double ts) = 0;
             virtual double update(Cluster const& detection) = 0;
+            virtual double squared_distance(Cluster const& detection) const = 0;
             virtual validation::ExtentModel* getExtentValidationModel() const = 0;
             virtual validation::KinematicModel* getKinematicValidationModel() const = 0;
             virtual ExtentModel* copy() const = 0;
@@ -30,6 +31,7 @@ namespace tracker
 
             void predict(double ts) override;
             double update(Cluster const& detection) override;
+            double squared_distance(Cluster const& detection) const override;
             validation::ExtentModel* getExtentValidationModel() const override;
             validation::KinematicModel* getKinematicValidationModel() const override;
             ExtentModel* copy() const override;
@@ -42,6 +44,7 @@ namespace tracker
 
             double _v;
             Eigen::Matrix2d _V;
+            Eigen::Matrix2d _X_hat;
 
             double const _tau = 2;
             int const _dof = 2;

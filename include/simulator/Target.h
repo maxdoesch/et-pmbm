@@ -7,7 +7,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 
 #include "validation/ValidationModel.h"
 

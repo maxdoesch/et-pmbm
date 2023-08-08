@@ -22,6 +22,7 @@ namespace tracker
             double detection_likelihood(Cluster const& detection);
             void update_missed_detection();
             double get_pExistence() const;
+            double squared_distance(Cluster const& detection) const;
             validation::ValidationModel* getValidationModel() const;
             void print() const;
 

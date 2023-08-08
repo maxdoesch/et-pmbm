@@ -13,12 +13,14 @@ template <class KinematicTemplate> GIW<KinematicTemplate>::GIW()
 {
     _V = Eigen::Matrix2d::Identity();
     _v = 2 * (_dof + 1) + 1; //v > 2d
+    _X_hat = _V / (_v - 2 * _dof - 2);
 }
 
 template <class KinematicTemplate> GIW<KinematicTemplate>::GIW(GIW const* e_model) : _k_model(e_model->_k_model)
 {
     _v = e_model->_v;
     _V = e_model->_V;
+    _X_hat = e_model->_X_hat;
 }
 
 template <class KinematicTemplate> GIW<KinematicTemplate>::GIW(double const weights[], GIW<KinematicTemplate> const e_models[], int components)
@@ -28,13 +30,13 @@ template <class KinematicTemplate> GIW<KinematicTemplate>::GIW(double const weig
     if(_v < 2 * (_dof + 1))
         _selectMostLikely(*this, weights, e_models, components);
 
-    KinematicTemplate* k_models = new KinematicTemplate[components];
+    _X_hat = _V / (_v - 2 * _dof - 2);
 
+    KinematicTemplate* k_models = new KinematicTemplate[components];
     for(int i = 0; i < components; i++)
     {
         k_models[i] = e_models[i]._k_model;
     }
-
     _k_model = KinematicTemplate(weights, k_models, components);
 
     delete[] k_models;
@@ -46,6 +48,8 @@ template <class KinematicTemplate> GIW<KinematicTemplate>::GIW(std::vector<doubl
 
     if(_v < 2 * (_dof + 1))
         _selectMostLikely(weights, e_models);
+
+    _X_hat = _V / (_v - 2 * _dof - 2);
 }
 
 template <class KinematicTemplate> GIW<KinematicTemplate>::GIW(Eigen::Vector4d const& m, Eigen::Matrix4d const& P, Eigen::Matrix2d const& V) : 
@@ -53,11 +57,20 @@ template <class KinematicTemplate> GIW<KinematicTemplate>::GIW(Eigen::Vector4d c
 {
     _V = V;
     _v = 2 * (_dof + 1) + 1; //v > 2d
+    _X_hat = _V / (_v - 2 * _dof - 2);
 }
 
 template <class KinematicTemplate> GIW<KinematicTemplate>::~GIW()
 {
 
+}
+
+template <class KinematicTemplate> void GIW<KinematicTemplate>::operator=(GIW const& e_model)
+{
+    _v = e_model._v;
+    _V = e_model._V;
+    _X_hat = e_model._X_hat;
+    _k_model = e_model._k_model;
 }
 
 template <class KinematicTemplate> void GIW<KinematicTemplate>::predict(double ts)
@@ -68,6 +81,7 @@ template <class KinematicTemplate> void GIW<KinematicTemplate>::predict(double t
 
     _v = 2 * _dof + 2 + std::exp(-ts/_tau) * (_v - 2 * _dof - 2);
     _V = std::exp(- ts / _tau) * _k_model.M * _V * _k_model.M.transpose();
+    _X_hat = _V / (_v - 2 * _dof - 2);
 }
 
 template <class KinematicTemplate> double GIW<KinematicTemplate>::update(Cluster const& detection)
@@ -97,14 +111,27 @@ template <class KinematicTemplate> double GIW<KinematicTemplate>::update(Cluster
     logLikelihood -= (v - _dof - 1) / 2. * std::log(V.determinant()) + mlgamma(_dof, (_v - _dof - 1) / 2.) + 0.5 * std::log(S.determinant());
 
     _v = v;
-    _V = 0.5 * (V + V.transpose());
+    _V = V;
+    _X_hat = _V / (_v - 2 * _dof - 2);
 
     return logLikelihood;
 }
 
+template <class KinematicTemplate> double GIW<KinematicTemplate>::squared_distance(Cluster const& detection) const
+{
+    Eigen::Matrix2d R = _X_hat + _k_model.H * _k_model.P * _k_model.H.transpose();
+    Eigen::Vector2d diff = detection.mean() - _k_model.H * _k_model.m;
+
+    Eigen::Matrix2d R_2 = (R + 4 * detection.covariance() / detection.size()) / 2.;
+
+    double squared_distance = diff.transpose() * R_2.inverse() * diff;
+
+    return squared_distance;
+}
+
 template <class KinematicTemplate> validation::ExtentModel* GIW<KinematicTemplate>::getExtentValidationModel() const
 {
-    Eigen::SelfAdjointEigenSolver<Eigen::Matrix2d> eigenSolver(_V / (_v - 2 * _dof - 2));
+    Eigen::SelfAdjointEigenSolver<Eigen::Matrix2d> eigenSolver(_X_hat);
     Eigen::Matrix2d eigenVectors = eigenSolver.eigenvectors();
     Eigen::Vector2d eigenValues = eigenSolver.eigenvalues();
 
@@ -124,7 +151,7 @@ template <class KinematicTemplate> validation::ExtentModel* GIW<KinematicTemplat
 
 template <class KinematicTemplate> validation::KinematicModel* GIW<KinematicTemplate>::getKinematicValidationModel() const
 {
-    Eigen::SelfAdjointEigenSolver<Eigen::Matrix2d> eigenSolver(_V / (_v - 2 * _dof - 2));
+    Eigen::SelfAdjointEigenSolver<Eigen::Matrix2d> eigenSolver(_X_hat);
     Eigen::Matrix2d eigenVectors = eigenSolver.eigenvectors();
     Eigen::Vector2d eigenValues = eigenSolver.eigenvalues();
 
@@ -149,13 +176,6 @@ template <class KinematicTemplate> ExtentModel* GIW<KinematicTemplate>::copy() c
     GIW* e_model = new GIW(this);
 
     return e_model;
-}
-
-template <class KinematicTemplate> void GIW<KinematicTemplate>::operator=(GIW const& e_model)
-{
-    _v = e_model._v;
-    _V = e_model._V;
-    _k_model = e_model._k_model;
 }
 
 template <class KinematicTemplate> void GIW<KinematicTemplate>::_merge(GIW<KinematicTemplate>& e_model, double const weights[], GIW<KinematicTemplate> const e_models[], int components)

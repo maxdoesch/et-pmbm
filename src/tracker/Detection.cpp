@@ -24,6 +24,16 @@ _measurements{cluster._measurements}, _two_dim_measurements{cluster._two_dim_mea
 
 }
 
+Cluster& Cluster::operator=(Cluster const& cluster)
+{
+    _measurements = cluster._measurements;
+    _two_dim_measurements = cluster._two_dim_measurements;
+    _mean = cluster._mean;
+    _covariance = cluster._covariance;
+
+    return *this;
+}
+
 void Cluster::_computeMeanCov()
 {
     Eigen::Matrix2d covariance = Eigen::Matrix2d::Zero();
@@ -106,11 +116,16 @@ validation::ValidationModel* Cluster::getValidationModel(cv::Scalar const& color
     return new validation::GenericValidationModel(cv, ellipse, rate_model, color);
 }
 
+Partition::Partition()
+{
+
+}
+
 void Partition::getValidationModels(std::vector<validation::ValidationModel*>& models) const
 {
-    int r = (double)std::rand() / RAND_MAX * 255;
-    int g = (double)std::rand() / RAND_MAX * 255;
-    int b = (double)std::rand() / RAND_MAX * 255;
+    int r = (double)std::rand() / RAND_MAX * 100 + 155;
+    int g = (double)std::rand() / RAND_MAX * 100 + 155;
+    int b = (double)std::rand() / RAND_MAX * 100 + 155;
 
     for(auto const& detection : detections)
     {
@@ -191,6 +206,19 @@ Partition::Partition(pcl::PointCloud<pcl::PointXYZ>::Ptr measurements, pcl::Poin
 Partition::Partition(Partition const& partition) : detections{partition.detections}
 {
 
+}
+
+Partition& Partition::operator=(Partition const& partition)
+{
+    detections = partition.detections;
+
+    return *this;
+}
+
+void Partition::merge(Partition const& partition)
+{
+    detections.reserve(detections.size() + partition.detections.size());
+    detections.insert(detections.end(), partition.detections.begin(), partition.detections.end());
 }
 
 PartitionedParent::PartitionedParent(Cluster const& parent_cluster) : parent{parent_cluster}

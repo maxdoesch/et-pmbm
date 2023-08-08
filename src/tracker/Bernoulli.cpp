@@ -80,6 +80,11 @@ double Bernoulli::get_pExistence() const
     return _p_existence; 
 }
 
+double Bernoulli::squared_distance(Cluster const& detection) const
+{
+    return _e_model->squared_distance(detection);
+}
+
 validation::ValidationModel* Bernoulli::getValidationModel() const
 {
     return new validation::GenericValidationModel(_e_model->getKinematicValidationModel(), _e_model->getExtentValidationModel(), _r_model.getRateValidationModel(), CV_RGB(255, 0, 0));

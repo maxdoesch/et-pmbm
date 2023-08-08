@@ -1,9 +1,12 @@
 #include "tracker/utils.h"
+#include "tracker/constants.h"
 
 #include <boost/math/tools/roots.hpp>
 #include <boost/math/special_functions/gamma.hpp>
 
 #include <limits>
+
+using namespace tracker;
 
 
 Eigen::MatrixXd matrixSqrt(Eigen::MatrixXd const& matrix)
@@ -118,8 +121,12 @@ double sum_log_weights(double const l_weights[], int const& components)
 
     for(int i = 0; i < components; i++)
     {
-        if(l_weights[i] != min_l_weight)
-            weight_sum += std::exp(l_weights[i] - min_l_weight);
+        double l_weight_diff = l_weights[i] - min_l_weight;
+        if(l_weight_diff != 0)
+        {
+            l_weight_diff = (l_weight_diff > max_hypothesis_l_weight_diff) ? max_hypothesis_l_weight_diff : l_weight_diff;
+            weight_sum += std::exp(l_weight_diff);
+        }
     }
 
     double l_weight_sum = min_l_weight + std::log(1 + weight_sum);
@@ -145,8 +152,13 @@ double sum_log_weights(std::vector<double> const& l_weights)
 
     for(auto const& l_weight : l_weights)
     {
-        if(l_weight != min_l_weight)
-            weight_sum += std::exp(l_weight - min_l_weight);
+        double l_weight_diff = l_weight - min_l_weight;
+        if(l_weight_diff != 0)
+        {
+            l_weight_diff = (l_weight_diff > max_hypothesis_l_weight_diff) ? max_hypothesis_l_weight_diff : l_weight_diff;
+            weight_sum += std::exp(l_weight_diff);
+        }
+            
     }
 
     double l_weight_sum = min_l_weight + std::log(1 + weight_sum);

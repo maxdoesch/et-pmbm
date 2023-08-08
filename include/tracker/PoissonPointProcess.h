@@ -34,6 +34,8 @@ namespace tracker
         public:
             BirthModel();
             ~BirthModel();
+            BirthModel(BirthModel const& birth_model);
+            BirthModel& operator=(BirthModel const& birth_model);
             void birth(std::vector<PoissonComponent>& b_components) const;
 
         private:
@@ -48,8 +50,11 @@ namespace tracker
     class PPP
     {
         public:
-            PPP() {};
+            PPP();
             ~PPP();
+            PPP(PPP const& ppp);
+            PPP& operator=(PPP const& ppp);
+
             void predict(double ts);
             void update_missed_detection();
             Bernoulli detection_likelihood(Cluster const& detection, double& likelihood) const;

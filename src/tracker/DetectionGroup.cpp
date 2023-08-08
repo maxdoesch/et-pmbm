@@ -68,7 +68,24 @@ void DetectionGroup::solve(MultiBernoulliMixture& detection_hypotheses)
     for(int i = 0; i < _b_size; i++)
         bernoulli_idx.insert(i);
 
-    _assignment_hypotheses = MurtyMiller<double>::getMBestAssignments(_cost_matrix, _m_assignments);
+    if(_d_size > 0)
+        _assignment_hypotheses = MurtyMiller<double>::getMBestAssignments(_cost_matrix, _m_assignments);
+    else
+    {
+        std::vector<Bernoulli> undetected_bernoullis;
+        double hypothesis_likelihood = 0;
+
+        for(auto const& prior_bernoulli : _prior_hypothesis)
+        {
+            Bernoulli undetected_bernoulli(prior_bernoulli);
+            hypothesis_likelihood += undetected_bernoulli.missed_detection_likelihood();
+            undetected_bernoulli.update_missed_detection();
+            undetected_bernoullis.push_back(undetected_bernoulli);
+        }
+
+        MultiBernoulli multi_bernoulli(undetected_bernoullis, hypothesis_likelihood);
+        detection_hypotheses.add(multi_bernoulli);
+    }
 
     for(auto const& assignment_hypothesis : _assignment_hypotheses)
     {
@@ -96,7 +113,7 @@ void DetectionGroup::solve(MultiBernoulliMixture& detection_hypotheses)
         }
 
         double hypothesis_likelihood = MurtyMiller<double>::objectiveFunctionValue(assignment_hypothesis);
-        hypothesis_likelihood = (hypothesis_likelihood < min_likelihood) ? min_likelihood : hypothesis_likelihood;
+        //hypothesis_likelihood = (hypothesis_likelihood < min_likelihood) ? min_likelihood : hypothesis_likelihood;
 
         MultiBernoulli multi_bernoulli(assignment_hypothesis_bernoulli, hypothesis_likelihood);
         detection_hypotheses.add(multi_bernoulli);

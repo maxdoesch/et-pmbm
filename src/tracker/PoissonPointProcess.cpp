@@ -5,9 +5,27 @@
 
 using namespace tracker;
 
+PPP::PPP() 
+{
+
+}
+
+PPP::PPP(PPP const& ppp) : _p_components{ppp._p_components}, _b_model{ppp._b_model}
+{
+
+}
+
 PPP::~PPP()
 {
 
+}
+
+PPP& PPP::operator=(PPP const& ppp)
+{
+    _p_components = ppp._p_components;
+    _b_model = ppp._b_model;
+
+    return *this;
 }
 
 void PPP::predict(double ts)
@@ -295,8 +313,21 @@ BirthModel::BirthModel()
     
 }
 
+BirthModel::BirthModel(BirthModel const& birth_model) : _birth_components{birth_model._birth_components}
+{
+
+}
+
 BirthModel::~BirthModel()
 {
+
+}
+
+BirthModel& BirthModel::operator=(BirthModel const& birth_model)
+{
+    _birth_components = birth_model._birth_components;
+
+    return *this;
 }
 
 void BirthModel::birth(std::vector<PoissonComponent>& b_components) const

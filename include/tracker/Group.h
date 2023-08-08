@@ -9,13 +9,19 @@ namespace tracker
     class Group
     {
         public:
+            explicit Group(PPP const& ppp);
             explicit Group(std::vector<Partition> const& partitions, std::vector<Bernoulli> const& bernoullis, PPP const& ppp);
+            Group(Group const& group);
+            Group& operator=(Group const& group);
+
+            void add(Bernoulli const& bernoulli);
+            void add(std::vector<Partition> const& partitions);
+            void add(Group const& group);
             void solve(MultiBernoulliMixture& group_hypotheses) const;
             
-
         private:
-            std::vector<Partition> const& _partitions;
-            std::vector<Bernoulli> const& _bernoullis;
-            PPP const& _ppp;
+            std::vector<Partition> _partitions;
+            std::vector<Bernoulli> _bernoullis;
+            PPP _ppp;
     };
 }
