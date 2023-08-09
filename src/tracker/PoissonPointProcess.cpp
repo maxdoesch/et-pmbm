@@ -1,4 +1,5 @@
 #include "tracker/PoissonPointProcess.h"
+#include "tracker/Bernoulli.h"
 #include "tracker/utils.h"
 
 #include "tracker/constants.h"
@@ -30,7 +31,7 @@ PPP& PPP::operator=(PPP const& ppp)
 
 void PPP::predict(double ts)
 {
-    for(auto component : _p_components)
+    for(auto& component : _p_components)
         component.predict(ts);
 
     _b_model.birth(_p_components);
@@ -38,10 +39,54 @@ void PPP::predict(double ts)
 
 void PPP::update_missed_detection()
 {
-    for(auto component : _p_components)
+    for(auto& component : _p_components)
     {
         component.update_missed_detection();
     }
+}
+
+void PPP::prune(double threshold)
+{
+    std::vector<tracker::PoissonComponent>::iterator p_components_iterator;
+    for(p_components_iterator = _p_components.begin(); p_components_iterator < _p_components.end();)
+    {
+        if((*p_components_iterator).getWeight() < threshold)
+        {
+            p_components_iterator = _p_components.erase(p_components_iterator);
+        }
+        else
+            p_components_iterator++;
+    }
+}
+
+void PPP::capping(int N)
+{
+    std::priority_queue<PoissonComponent, std::vector<PoissonComponent>, std::greater<PoissonComponent>> minHeap;
+
+    for(auto const& _p_component : _p_components)
+    {
+        if(minHeap.size() < N)
+            minHeap.push(_p_component);
+        else if(_p_component.getWeight() > minHeap.top().getWeight())
+        {
+            minHeap.pop();
+            minHeap.push(_p_component);
+        }
+    }
+
+    _p_components.clear();
+    _p_components.reserve(minHeap.size());
+
+    while(!minHeap.empty())
+    {
+        _p_components.push_back(minHeap.top());
+        minHeap.pop();
+    }
+}
+
+void PPP::add_component(PoissonComponent const& p_component)
+{
+    _p_components.push_back(p_component);
 }
 
 /*
@@ -155,10 +200,9 @@ Bernoulli PPP::detection_likelihood(Cluster const& detection, double& likelihood
     if(detection.size() == 1)
         p_existence = 1. / (std::exp(std::log(clutter_rate) - l_weight_sum) + 1);
 
-    Bernoulli bernoulli(p_existence, e_model, r_model);
-
     likelihood = l_weight_sum;
 
+    Bernoulli bernoulli(p_existence, e_model, r_model);
     return bernoulli;
 }
 
@@ -168,7 +212,14 @@ void PPP::getValidationModels(std::vector<validation::ValidationModel*>& models)
         models.push_back(component.getValidationModel());
 }
 
+
 PoissonComponent::PoissonComponent(double weight, GIW<ConstantVelocity> const& e_model, RateModel const& r_model) : _e_model{e_model},  _weight{weight}, _r_model{r_model}
+{
+
+}
+
+PoissonComponent::PoissonComponent(double l_weight, Bernoulli const& bernoulli) : 
+    _e_model{*dynamic_cast<GIW<ConstantVelocity>*>(bernoulli._e_model)}, _r_model{bernoulli._r_model}, _weight{std::exp(l_weight) * bernoulli._p_existence}
 {
 
 }
@@ -184,16 +235,18 @@ PoissonComponent::~PoissonComponent()
 
 }
 
-void PoissonComponent::operator=(PoissonComponent const& p_component)
+PoissonComponent& PoissonComponent::operator=(PoissonComponent const& p_component)
 {
     _e_model = p_component._e_model;
     _r_model = p_component._r_model;
     _weight = p_component._weight;
+
+    return *this;
 }
 
 void PoissonComponent::predict(double ts)
 {
-    _weight = _weight * p_survival;
+    _weight *= p_survival;
 
     _e_model.predict(ts);
     _r_model.predict();
@@ -239,9 +292,13 @@ validation::ValidationModel* PoissonComponent::getValidationModel() const
     return new validation::GenericValidationModel(_e_model.getKinematicValidationModel(), _e_model.getExtentValidationModel(), _r_model.getRateValidationModel(), CV_RGB(0, 255, 0));
 }
 
+bool PoissonComponent::operator>(PoissonComponent const& p_component) const
+{
+    return _weight > p_component._weight;
+}
+
 BirthModel::BirthModel()
 {
- 
     Eigen::Matrix4d init_state_covariance = Eigen::Matrix4d::Zero();
     init_state_covariance(0, 0) = pow(_field_of_view_x / (3 * (_n_components + 1)), 2);
     init_state_covariance(1, 1) = pow(_field_of_view_y / (3 * (_n_components + 1)), 2);
@@ -263,7 +320,7 @@ BirthModel::BirthModel()
             init_state[1] = y;
 
             GIW<ConstantVelocity> e_model(init_state, init_state_covariance, init_extent_matrix);
-            RateModel r_model(2000, 5);
+            RateModel r_model(500, 5);
             _birth_components.push_back(PoissonComponent(1e-10 / (_n_components * _n_components), e_model, r_model));
         }
     }
@@ -310,7 +367,6 @@ BirthModel::BirthModel()
     GIW<ConstantVelocity> e_model(init_state, init_state_covariance, init_extent_matrix);
     RateModel r_model(5000, 5);
     _birth_components.push_back(PoissonComponent(0.5, e_model, r_model));*/
-    
 }
 
 BirthModel::BirthModel(BirthModel const& birth_model) : _birth_components{birth_model._birth_components}

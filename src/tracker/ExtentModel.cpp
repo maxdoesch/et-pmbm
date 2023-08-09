@@ -407,4 +407,10 @@ void RateModel::_merge(std::vector<double> const& weights, std::vector<RateModel
         weights_it++; 
         r_models_it++;
     }
+
+    double bias = 1 / t_weight * comp_1 - std::log(1 / t_weight * comp_2);
+
+    _alpha = boost::math::tools::newton_raphson_iterate(log_digamma(bias), r_models[0]._alpha, 0.0, alpha_max * 1.5, 31);
+
+    _beta = _alpha / (1 / t_weight * comp_2);
 }

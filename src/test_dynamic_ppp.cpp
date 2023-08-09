@@ -16,7 +16,7 @@ int main(int argc, char** argv)
     double const time_step = 0.1;
 
     simulator::Simulator simulator(time_step, 40);
-    simulator.addNRandomTargets(1);
+    //simulator.addNRandomTargets(3);
     
     Eigen::Matrix<double, 5, 1> i_state = Eigen::Matrix<double, 5, 1>::Zero();
     i_state[0] = -6;
@@ -37,6 +37,7 @@ int main(int argc, char** argv)
     e_model = new simulator::Ellipse(1, 1, 50);
     target = new simulator::GenericTarget(k_model, e_model, 1, 30);
     simulator.addTarget(target);
+
 
     i_state[0] = -8;
     i_state[1] = -6;
@@ -77,9 +78,7 @@ int main(int argc, char** argv)
     validation::Visualization visualization(time_step);
 
     tracker::MultiBernoulliMixture mbm;
-
     tracker::PPP ppp;
-    ppp.predict(time_step);
 
     std::chrono::nanoseconds::rep duration = 0;
     std::chrono::nanoseconds::rep max_duration = 0;
@@ -96,6 +95,7 @@ int main(int argc, char** argv)
             mbm.add(tracker::MultiBernoulli());
 
         mbm.predict(time_step);
+        ppp.predict(time_step);
 
         std::cout << "---------------------------------------------" << std::endl;
 
@@ -123,9 +123,11 @@ int main(int argc, char** argv)
                 
                 new_mbm.add(hypothesis.getMostLikelyHypotheses(3));
             }
-            mbm = new_mbm;
 
+            mbm = new_mbm;
             mbm.normalize();
+
+            ppp.update_missed_detection();
 
             auto stop = std::chrono::high_resolution_clock::now();
             duration += std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
@@ -137,13 +139,14 @@ int main(int argc, char** argv)
 
         mbm.prune(-10);
         mbm.capping(5);
-        mbm.prune_bernoulli(0.1);
-
         mbm.normalize();
-
+        mbm.recycle(0.1, ppp);
         mbm.print();
 
-        std::vector<tracker::Bernoulli> estimate = mbm.estimate(0.5);
+        ppp.prune(1e-7);
+        ppp.capping(5);
+
+        std::vector<tracker::Bernoulli> estimate = mbm.estimate(0.6);
 
         ppp.getValidationModels(models);
         simulator.getValidationModels(models);

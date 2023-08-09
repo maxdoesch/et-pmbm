@@ -3,25 +3,28 @@
 #include <vector>
 
 #include "tracker/ExtentModel.h"
-#include "tracker/Bernoulli.h"
 #include "validation/ValidationModel.h"
 
 
 namespace tracker
 {
+    class Bernoulli;
     class PoissonComponent
     {
         public:
             explicit PoissonComponent(double weight, GIW<ConstantVelocity> const& e_model, RateModel const& r_model);
+            explicit PoissonComponent(double l_weight, Bernoulli const& bernoulli);
             PoissonComponent(PoissonComponent const& p_component);
             ~PoissonComponent();
-            void operator=(PoissonComponent const& p_component);
+            PoissonComponent& operator=(PoissonComponent const& p_component);
 
             void predict(double ts);
             void update_missed_detection();
             double detection_likelihood(Cluster const& detection, GIW<ConstantVelocity>& e_model, RateModel& r_model) const;
             double getWeight() const;
             validation::ValidationModel* getValidationModel() const;
+
+            bool operator>(PoissonComponent const& p_component) const;
 
         private:
             GIW<ConstantVelocity> _e_model;
@@ -46,7 +49,6 @@ namespace tracker
             double const _field_of_view_x = 1280. / 50.;
             double const _field_of_view_y = 720. / 50.;
     };
-
     class PPP
     {
         public:
@@ -58,6 +60,9 @@ namespace tracker
             void predict(double ts);
             void update_missed_detection();
             Bernoulli detection_likelihood(Cluster const& detection, double& likelihood) const;
+            void prune(double threshold);
+            void capping(int N);
+            void add_component(PoissonComponent const& p_component);
             void getValidationModels(std::vector<validation::ValidationModel*>& models);
 
         private:

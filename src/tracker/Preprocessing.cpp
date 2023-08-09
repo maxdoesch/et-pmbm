@@ -173,23 +173,24 @@ void GroupExtractor::extractGroups(std::vector<Group>& groups)
                     }
                     else if(detection_id != bernoulli_id)
                     {
-                        detection_id->add(*bernoulli_id);
-                        delete bernoulli_id;
-                        group_ids.erase(bernoulli_id);
+                        Group* redundant_group_id = bernoulli_id;
+                        detection_id->add(*redundant_group_id);
                         for(auto& bernoulli_association_2 : _bernoulli_associations)
                         {
-                            if(bernoulli_association_2.second == bernoulli_id)
+                            if(bernoulli_association_2.second == redundant_group_id)
                             {
                                 bernoulli_association_2.second = detection_id;
                             }
                         }
                         for(auto& partitioned_parent_association_2 : _partitioned_parent_associations)
                         {
-                            if(partitioned_parent_association_2.second == bernoulli_id)
+                            if(partitioned_parent_association_2.second == redundant_group_id)
                             {
                                 partitioned_parent_association_2.second = detection_id;
                             }
                         }
+                        delete redundant_group_id;
+                        group_ids.erase(redundant_group_id);
                     }
                 }
             }

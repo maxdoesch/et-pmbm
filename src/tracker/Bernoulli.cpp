@@ -1,4 +1,5 @@
 #include "tracker/Bernoulli.h"
+#include "tracker/PoissonPointProcess.h"
 #include "tracker/utils.h"
 #include "tracker/constants.h"
 
@@ -139,6 +140,21 @@ void MultiBernoulli::prune(double threshold)
     }
 }
 
+void MultiBernoulli::recycle(double threshold, PPP& ppp)
+{
+    std::vector<tracker::Bernoulli>::iterator bernoulli_iterator;
+    for(bernoulli_iterator = _bernoullis.begin(); bernoulli_iterator < _bernoullis.end();)
+    {
+        if((*bernoulli_iterator).get_pExistence() < threshold)
+        {
+            ppp.add_component(PoissonComponent(_weight, *bernoulli_iterator));
+            bernoulli_iterator = _bernoullis.erase(bernoulli_iterator);
+        }
+        else
+            bernoulli_iterator++;
+    }
+}
+
 void MultiBernoulli::join(MultiBernoulli const& bernoullis)
 {
     _weight += bernoullis._weight;
@@ -194,7 +210,7 @@ void MultiBernoulli::operator=(MultiBernoulli const& multi_bernoulli)
     _weight = multi_bernoulli._weight;
 }
 
-bool MultiBernoulli::operator<(MultiBernoulli const& other) const
+bool MultiBernoulli::operator>(MultiBernoulli const& other) const
 {
     return _weight > other._weight;
 }
@@ -232,7 +248,7 @@ void MultiBernoulliMixture::prune(double threshold)
 
 void MultiBernoulliMixture::capping(int N)
 {
-    std::priority_queue<MultiBernoulli> minHeap;
+    std::priority_queue<MultiBernoulli, std::vector<MultiBernoulli>, std::greater<MultiBernoulli>> minHeap;
 
     for(auto const& multi_bernoulli : _multi_bernoullis)
     {
@@ -255,10 +271,16 @@ void MultiBernoulliMixture::capping(int N)
     }
 }
 
-void MultiBernoulliMixture::recycle(double threshold)
+void MultiBernoulliMixture::prune_bernoulli(double threshold)
 {
     for(auto& multi_bernoulli : _multi_bernoullis)
         multi_bernoulli.prune(threshold);
+}
+
+void MultiBernoulliMixture::recycle(double threshold, PPP& ppp)
+{
+    for(auto& multi_bernoulli : _multi_bernoullis)
+        multi_bernoulli.recycle(threshold, ppp);
 }
 
 std::vector<Bernoulli> MultiBernoulliMixture::estimate(double threshold)
@@ -353,7 +375,7 @@ std::vector<MultiBernoulli> MultiBernoulliMixture::selectMostLikely(int x) const
 {
     int n = (_multi_bernoullis.size() < x) ? _multi_bernoullis.size() : x;  
 
-    std::priority_queue<MultiBernoulli> minHeap;
+    std::priority_queue<MultiBernoulli, std::vector<MultiBernoulli>, std::greater<MultiBernoulli>> minHeap;
 
     for(auto const& multi_bernoulli : _multi_bernoullis)
     {

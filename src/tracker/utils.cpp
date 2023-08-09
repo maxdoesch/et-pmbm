@@ -111,7 +111,7 @@ void merge_inverse_wishart(double& v_m, Eigen::Matrix2d& V_m, double const weigh
 double sum_log_weights(double const l_weights[], int const& components)
 {
     double min_l_weight = std::numeric_limits<double>::infinity();
-    double weight_sum = 0;
+    long double weight_sum = 0;
 
     for(int i = 0; i < components; i++)
     {
@@ -121,20 +121,16 @@ double sum_log_weights(double const l_weights[], int const& components)
 
     for(int i = 0; i < components; i++)
     {
-        double l_weight_diff = l_weights[i] - min_l_weight;
+        long double l_weight_diff = l_weights[i] - min_l_weight;
         if(l_weight_diff != 0)
         {
-            l_weight_diff = (l_weight_diff > max_hypothesis_l_weight_diff) ? max_hypothesis_l_weight_diff : l_weight_diff;
             weight_sum += std::exp(l_weight_diff);
         }
     }
 
+    assert(!isinf(weight_sum));
+
     double l_weight_sum = min_l_weight + std::log(1 + weight_sum);
-    /*
-    for(int i = 0; i < components; i++)
-    {
-        l_weights[i] = l_weights[i] - max_l_weight - l_weight_sum;
-    }*/
 
     return l_weight_sum;
 }
@@ -142,7 +138,7 @@ double sum_log_weights(double const l_weights[], int const& components)
 double sum_log_weights(std::vector<double> const& l_weights)
 {
     double min_l_weight = std::numeric_limits<double>::infinity();
-    double weight_sum = 0;
+    long double weight_sum = 0;
 
     for(auto const& l_weight : l_weights)
     {
@@ -152,14 +148,14 @@ double sum_log_weights(std::vector<double> const& l_weights)
 
     for(auto const& l_weight : l_weights)
     {
-        double l_weight_diff = l_weight - min_l_weight;
+        long double l_weight_diff = l_weight - min_l_weight;
         if(l_weight_diff != 0)
         {
-            l_weight_diff = (l_weight_diff > max_hypothesis_l_weight_diff) ? max_hypothesis_l_weight_diff : l_weight_diff;
             weight_sum += std::exp(l_weight_diff);
-        }
-            
+        } 
     }
+
+    assert(!isinf(weight_sum));
 
     double l_weight_sum = min_l_weight + std::log(1 + weight_sum);
 

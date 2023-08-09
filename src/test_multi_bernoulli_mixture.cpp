@@ -157,7 +157,7 @@ int main(int argc, char** argv)
 
         mbm.prune(-10);
         mbm.capping(5);
-        mbm.recycle(0.5);
+        mbm.prune_bernoulli(0.5);
 
         mbm.normalize();
 

@@ -7,7 +7,9 @@
 #include "validation/ValidationModel.h"
 
 namespace tracker
-{
+{   
+    class PPP;
+    class PoissonComponent;
     class Bernoulli
     {
         public:
@@ -30,8 +32,9 @@ namespace tracker
             ExtentModel* _e_model;
             RateModel _r_model;
             double _p_existence = 1;
-    };
 
+        friend PoissonComponent;
+    };
     class MultiBernoulli
     {
         public:
@@ -42,6 +45,7 @@ namespace tracker
 
             void predict(double ts);
             void prune(double threshold);
+            void recycle(double threshold, PPP& ppp);
 
             void join(MultiBernoulli const& bernoullis);
             std::vector<Bernoulli> const& getBernoullis() const;
@@ -52,7 +56,7 @@ namespace tracker
             void getValidationModels(std::vector<validation::ValidationModel*>& models) const;
             void print() const;
 
-            bool operator<(MultiBernoulli const& other) const;
+            bool operator>(MultiBernoulli const& other) const;
 
         private:
             std::vector<Bernoulli> _bernoullis;
@@ -68,8 +72,9 @@ namespace tracker
 
             void predict(double ts);
             void prune(double threshold);
+            void prune_bernoulli(double threshold);
             void capping(int N);
-            void recycle(double threshold);
+            void recycle(double threshold, PPP& ppp);
             std::vector<Bernoulli> estimate(double threshold);
             void print() const;
 
