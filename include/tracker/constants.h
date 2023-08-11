@@ -2,8 +2,8 @@
 
 namespace tracker
 {
-    double constexpr p_survival = 0.9999;
-    double constexpr p_detection = 0.9999;
+    double constexpr p_survival = 0.99;
+    double constexpr p_detection = 0.99;
     double constexpr clutter_rate = 0.001;
     double constexpr min_likelihood = -500;
     double constexpr max_hypothesis_l_weight_diff = 500;

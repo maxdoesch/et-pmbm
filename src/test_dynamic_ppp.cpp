@@ -2,6 +2,7 @@
 #include "tracker/Hypothesis.h"
 
 #include "validation/Visualization.h"
+#include "validation/Evaluation.h"
 
 #include "simulator/Simulator.h"
 
@@ -16,7 +17,7 @@ int main(int argc, char** argv)
     double const time_step = 0.1;
 
     simulator::Simulator simulator(time_step, 40);
-    //simulator.addNRandomTargets(3);
+    simulator.addNRandomTargets(3);
     
     Eigen::Matrix<double, 5, 1> i_state = Eigen::Matrix<double, 5, 1>::Zero();
     i_state[0] = -6;
@@ -76,6 +77,7 @@ int main(int argc, char** argv)
     simulator.addTarget(target);
 
     validation::Visualization visualization(time_step);
+    validation::Evaluation evaluation;
 
     tracker::MultiBernoulliMixture mbm;
     tracker::PPP ppp;
@@ -146,12 +148,20 @@ int main(int argc, char** argv)
         ppp.prune(1e-7);
         ppp.capping(5);
 
-        std::vector<tracker::Bernoulli> estimate = mbm.estimate(0.6);
+        std::vector<tracker::Bernoulli> estimate = mbm.estimate(0.5);
 
-        ppp.getValidationModels(models);
-        simulator.getValidationModels(models);
+        std::vector<validation::ValidationModel*> ground_truth_models;
+        simulator.getValidationModels(ground_truth_models);
+
+        std::vector<validation::ValidationModel*> estimate_models;
         for(auto const& bernoulli : estimate)
-            models.push_back(bernoulli.getValidationModel());
+            estimate_models.push_back(bernoulli.getValidationModel());
+
+        evaluation.plot(ground_truth_models, estimate_models, simulator.getTime());
+
+        models.insert(models.end(), ground_truth_models.begin(), ground_truth_models.end());
+        ppp.getValidationModels(models);
+        models.insert(models.end(), estimate_models.begin(), estimate_models.end());
 
         if(!visualization.draw(measurements, models))
             break;
@@ -165,4 +175,7 @@ int main(int argc, char** argv)
     }
 
     std::cout << "Avg. processing time: " << duration / i / 1000000. << "ms; max. processing time: " << max_duration / 1000000. << "ms" << std::endl;
+
+    evaluation.summarize();
+    evaluation.draw_plot();
 }

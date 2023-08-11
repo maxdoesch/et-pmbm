@@ -14,18 +14,21 @@ namespace validation
             virtual ~ValidationModel() {}
             virtual void draw(cv::Mat& image) const = 0;
             virtual void print() const = 0;
+            virtual Eigen::VectorXd state() const = 0;
+            virtual Eigen::MatrixXd extent() const = 0;
     };
 
     class ExtentModel
     {
         public:
             virtual void draw(cv::Mat& image, cv::Scalar const& color, Eigen::Vector3d const& state) const = 0;
+            virtual Eigen::MatrixXd extent() const = 0;
     };
 
     class KinematicModel
     {
         public:
-            virtual Eigen::VectorXd getState() const = 0;
+            virtual Eigen::VectorXd state() const = 0;
     };
 
     class RateModel
@@ -42,9 +45,14 @@ namespace validation
     {
         public:
             explicit GenericValidationModel(KinematicModel* k_model, ExtentModel* e_model, RateModel* r_model, cv::Scalar const& color);
+            GenericValidationModel(GenericValidationModel const& generic_validation_model) = delete;
             ~GenericValidationModel();
+            GenericValidationModel& operator=(GenericValidationModel const& generic_validation_model) = delete;
+
             void draw(cv::Mat& image) const override;
             void print() const override;
+            Eigen::VectorXd state() const override;
+            Eigen::MatrixXd extent() const override;
             
         private:
             KinematicModel* _k_model;
@@ -59,11 +67,15 @@ namespace validation
     {
         public:
             explicit Ellipse(double a, double b);
+            Ellipse(Ellipse const& ellipse) = delete;
+            Ellipse& operator=(Ellipse const& ellipse) = delete;
+
             void draw(cv::Mat& image, cv::Scalar const& color, Eigen::Vector3d const& state) const override;
+            Eigen::MatrixXd extent() const override;
 
         private:
             double _a = 0;
-            double _b = 0;       
+            double _b = 0;     
     };
 
 
@@ -71,7 +83,10 @@ namespace validation
     {
         public:
             explicit ConstantVelocity(Eigen::Matrix<double, 5, 1> const& state);
-            Eigen::VectorXd getState() const override;
+            ConstantVelocity(ConstantVelocity const& constant_velocity) = delete;
+            ConstantVelocity& operator=(ConstantVelocity const& constant_velocity) = delete;
+
+            Eigen::VectorXd state() const override;
 
         private:
             Eigen::Matrix<double, 5, 1> _state; //x, y, dx, dy, alpha

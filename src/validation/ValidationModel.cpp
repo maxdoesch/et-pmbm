@@ -17,7 +17,7 @@ GenericValidationModel::~GenericValidationModel()
 void GenericValidationModel::draw(cv::Mat& image) const
 {
     Eigen::Vector3d kinematicState;
-    kinematicState << _k_model->getState().block<2,1>(0,0), _k_model->getState()[4];
+    kinematicState << _k_model->state().block<2,1>(0,0), _k_model->state()[4];
 
     _e_model->draw(image, _color, kinematicState);
 }
@@ -25,10 +25,26 @@ void GenericValidationModel::draw(cv::Mat& image) const
 void GenericValidationModel::print() const
 {
     std::cout << "-------" << std::endl;
-    std::cout << _k_model->getState() << std::endl;
+    std::cout << _k_model->state() << std::endl;
 
     std::cout << "-------" << std::endl;
     std::cout << "p_rate: " << _r_model->getRate() << std::endl;
+}
+
+Eigen::VectorXd GenericValidationModel::state() const
+{
+    return _k_model->state().block<4, 1>(0,0);
+}
+
+Eigen::MatrixXd GenericValidationModel::extent() const
+{
+    double alpha = _k_model->state()[4];
+    Eigen::Matrix2d rot;
+    rot << std::cos(alpha), -std::sin(alpha), std::sin(alpha), std::cos(alpha);
+
+    Eigen::Matrix2d X = _e_model->extent();
+
+    return rot * X * rot.transpose();
 }
 
 Ellipse::Ellipse(double a, double b)  : _a{a}, _b{b} 
@@ -41,12 +57,20 @@ void Ellipse::draw(cv::Mat& image, cv::Scalar const& color, Eigen::Vector3d cons
     cv::ellipse(image, cv::Point(state[0] * p2co + img_size_x / 2, - state[1] * p2co + img_size_y / 2), cv::Size(_a  * p2co, _b  * p2co), - state[2] * 180 / M_PI, 0, 360, color, stroke_size);
 }
 
+Eigen::MatrixXd Ellipse::extent() const
+{
+    Eigen::Matrix2d X;
+    X << _a*_a, 0, 0, _b*_b;
+
+    return X;
+}
+
 ConstantVelocity::ConstantVelocity(Eigen::Matrix<double, 5, 1> const& state) : _state{state}
 {
 
 }
 
-Eigen::VectorXd ConstantVelocity::getState() const
+Eigen::VectorXd ConstantVelocity::state() const
 {
     return _state;
 }
