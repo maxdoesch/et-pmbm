@@ -31,12 +31,15 @@ MultiBernoulliMixture Hypotheses::getMostLikelyHypotheses(int x) const
 
     int n = (x < max_components) ? x : max_components;
 
-    MultiBernoulliMixture most_likely_hypotheses;
-
+    
+    std::vector<std::vector<MultiBernoulli>> per_group_posterior_mb;
     for(auto const& per_group_hypothesis : _per_group_hypotheses)
     {
-        most_likely_hypotheses.merge(_prev_weight, per_group_hypothesis.selectMostLikely(n));
+        //most_likely_hypotheses.merge(_prev_weight, per_group_hypothesis.selectMostLikely(n));
+        per_group_posterior_mb.push_back(per_group_hypothesis.selectMostLikely(n));
     }
+
+    MultiBernoulliMixture most_likely_hypotheses(_prev_weight, per_group_posterior_mb, n);
 
     return most_likely_hypotheses;
 }

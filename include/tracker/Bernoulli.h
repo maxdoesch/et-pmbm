@@ -10,8 +10,15 @@ namespace tracker
 {   
     class PPP;
     class PoissonComponent;
+    class MultiBernoulli;
+    class MultiBernoulliMixture;
+
     class Bernoulli
     {
+        friend MultiBernoulli;
+        friend MultiBernoulliMixture;
+        friend PoissonComponent;
+
         public:
             explicit Bernoulli(ExtentModel* e_model);
             Bernoulli(Bernoulli const& bernoulli);
@@ -32,11 +39,11 @@ namespace tracker
             ExtentModel* _e_model;
             RateModel _r_model;
             double _p_existence = 1;
-
-        friend PoissonComponent;
     };
     class MultiBernoulli
     {
+        friend MultiBernoulliMixture;
+
         public:
             MultiBernoulli() {};
             explicit MultiBernoulli(std::vector<Bernoulli> const& bernoullis, double weight);
@@ -68,6 +75,7 @@ namespace tracker
         public:
             MultiBernoulliMixture();
             MultiBernoulliMixture(MultiBernoulliMixture const& multi_bernoulli_mixture);
+            MultiBernoulliMixture(double prev_weight, std::vector<std::vector<MultiBernoulli>> group_mbs, int M);
             void operator=(MultiBernoulliMixture const& multi_bernoulli_mixture);
 
             void predict(double ts);
@@ -75,7 +83,7 @@ namespace tracker
             void prune_bernoulli(double threshold);
             void capping(int N);
             void recycle(double threshold, PPP& ppp);
-            std::vector<Bernoulli> estimate(double threshold);
+            std::vector<Bernoulli> estimate(double threshold) const;
             void print() const;
 
             void merge(double prev_weight, std::vector<MultiBernoulli> const& multi_bernoullis);

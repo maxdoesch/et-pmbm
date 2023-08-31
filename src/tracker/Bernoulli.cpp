@@ -225,6 +225,84 @@ MultiBernoulliMixture::MultiBernoulliMixture(MultiBernoulliMixture const& multi_
 
 }
 
+MultiBernoulliMixture::MultiBernoulliMixture(double prev_weight, std::vector<std::vector<MultiBernoulli>> group_mbs, int M)
+{
+    struct ComparePair
+    {
+        bool operator()(const std::pair<double, int>& a, const std::pair<double, int>& b) {
+            return a.first > b.first; 
+        }
+    };
+
+    for(auto& multi_bernoulli : group_mbs)
+        std::sort(multi_bernoulli.begin(), multi_bernoulli.end(), std::greater<MultiBernoulli>());
+
+    int m = 0;
+
+    int max_mb_size = 0;
+    for(auto const& group_mb : group_mbs)
+        max_mb_size = (max_mb_size < group_mb.size()) ? group_mb.size() : max_mb_size;
+
+    MultiBernoulli out_of_range_mb;
+    for(int j = 0; j < max_mb_size && m < M; j++)
+    {
+        std::vector<std::pair<double, int>> diff_queue;
+        for(int i = 0; i < group_mbs.size(); i++)
+        {
+            if(j < group_mbs[i].size() - 1)
+            {
+                diff_queue.push_back(std::make_pair(group_mbs[i][j]._weight - group_mbs[i][j+1]._weight, i));
+            }
+            else
+            {
+                out_of_range_mb.join(group_mbs[i][j]);
+                group_mbs.erase(group_mbs.begin() + i);
+                i--;
+            }
+        }
+        std::sort(diff_queue.begin(), diff_queue.end(), ComparePair());
+
+        if(group_mbs.empty())
+        {
+            _multi_bernoullis.push_back(out_of_range_mb);
+        }
+
+        for(int i = 0; i < std::pow(2, group_mbs.size()) - 1 && m < M; i++)
+        {
+            MultiBernoulli multi_bernoulli;
+            multi_bernoulli.join(out_of_range_mb);
+
+            bool do_not_insert = false;
+            for(int a = 0; a < group_mbs.size(); a++)
+            {
+                int idx = diff_queue[a].second;
+                int value = diff_queue[a].first;
+                if(i & (1 << a))
+                {
+                    if(value < 0)
+                    {
+                        do_not_insert = true;
+                        break;
+                    }
+                    
+                    multi_bernoulli.join(group_mbs[idx][j+1]);
+                }
+                else
+                    multi_bernoulli.join(group_mbs[idx][j]);
+            }
+
+            if(!do_not_insert)
+            {
+                _multi_bernoullis.push_back(multi_bernoulli);
+                m++;
+            }
+        }
+    }
+
+    for(auto& multi_bernoulli : _multi_bernoullis)
+        multi_bernoulli._weight += prev_weight;
+}
+
 void MultiBernoulliMixture::predict(double ts)
 {
     
@@ -283,7 +361,7 @@ void MultiBernoulliMixture::recycle(double threshold, PPP& ppp)
         multi_bernoulli.recycle(threshold, ppp);
 }
 
-std::vector<Bernoulli> MultiBernoulliMixture::estimate(double threshold)
+std::vector<Bernoulli> MultiBernoulliMixture::estimate(double threshold) const
 {
     std::vector<Bernoulli> estimate;
 
@@ -395,11 +473,11 @@ std::vector<MultiBernoulli> MultiBernoulliMixture::selectMostLikely(int x) const
         mostLikelyMixture.push_back(minHeap.top());
         minHeap.pop();
     }
-
+    /*
     for(int i = n; i < x; i++)
     {
         mostLikelyMixture.push_back(mostLikelyMixture.back());
-    }
+    }*/
 
     return mostLikelyMixture;
 }

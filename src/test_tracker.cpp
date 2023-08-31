@@ -1,16 +1,7 @@
-#include "tracker/Preprocessing.h"
-#include "tracker/Hypothesis.h"
-
+#include "tracker/Tracker.h"
+#include "simulator/Simulator.h"
 #include "validation/Visualization.h"
 #include "validation/Evaluation.h"
-
-#include "simulator/Simulator.h"
-
-#include <pcl/kdtree/kdtree.h>
-#include <pcl/segmentation/extract_clusters.h>
-
-#include "gnuplot-iostream.h"
-
 
 int main(int argc, char** argv)
 {
@@ -76,12 +67,11 @@ int main(int argc, char** argv)
     validation::Visualization visualization(time_step);
     validation::Evaluation evaluation;
 
-    tracker::MultiBernoulliMixture mbm;
-    tracker::PPP ppp;
-
     std::chrono::nanoseconds::rep duration = 0;
     std::chrono::nanoseconds::rep max_duration = 0;
     int i = 0;
+
+    tracker::PMBM pmbm(10);
 
     while(!simulator.endOfSimulation())
     {
@@ -90,43 +80,13 @@ int main(int argc, char** argv)
 
         simulator.step(measurements);
 
-        if(mbm.size() == 0)
-            mbm.add(tracker::MultiBernoulli());
-
-        mbm.predict(time_step);
-        ppp.predict(time_step);
-
-        std::cout << "---------------------------------------------" << std::endl;
+        pmbm.predict(time_step);
 
         if(measurements->size() > 0)
         {
             auto start = std::chrono::high_resolution_clock::now();
 
-            std::vector<tracker::PartitionedParent> parent_partitions;
-            tracker::PartitionExtractor partition_extractor(measurements);
-            partition_extractor.getPartitionedParents(parent_partitions);
-
-            for(auto const& parent_partition : parent_partitions)
-                for(auto const& partition : parent_partition.partitions)
-                    partition.getValidationModels(models);
-
-            tracker::MultiBernoulliMixture new_mbm;
-            for(auto const& multi_bernoulli : mbm.getMultiBernoullis())
-            {
-                std::vector<tracker::Group> groups;
-                tracker::GroupExtractor group_extractor(parent_partitions, multi_bernoulli.getBernoullis(), ppp);
-                group_extractor.extractGroups(groups);
-                std::cout << "groups: " << groups.size() << std::endl;
-
-                tracker::Hypotheses hypothesis(multi_bernoulli.getWeight(), groups);
-                
-                new_mbm.add(hypothesis.getMostLikelyHypotheses(3));
-            }
-
-            mbm = new_mbm;
-            mbm.normalize();
-
-            ppp.update_missed_detection();
+            pmbm.update(measurements);
 
             auto stop = std::chrono::high_resolution_clock::now();
             duration += std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
@@ -136,28 +96,16 @@ int main(int argc, char** argv)
             i++;
         }
 
-        mbm.prune(-10);
-        mbm.capping(10);
-        mbm.normalize();
-        mbm.recycle(0.1, ppp);
-        mbm.print();
-
-        ppp.prune(1e-7);
-        ppp.capping(5);
-
-        std::vector<tracker::Bernoulli> estimate = mbm.estimate(0.5);
-
-        std::vector<validation::ValidationModel*> ground_truth_models;
-        simulator.getValidationModels(ground_truth_models);
+        pmbm.reduce();
 
         std::vector<validation::ValidationModel*> estimate_models;
-        for(auto const& bernoulli : estimate)
-            estimate_models.push_back(bernoulli.getValidationModel());
+        std::vector<validation::ValidationModel*> ground_truth_models;
+        simulator.getValidationModels(ground_truth_models);
+        pmbm.estimate(estimate_models);
 
         evaluation.plot(ground_truth_models, estimate_models, simulator.getTime());
 
         models.insert(models.end(), ground_truth_models.begin(), ground_truth_models.end());
-        //ppp.getValidationModels(models);
         models.insert(models.end(), estimate_models.begin(), estimate_models.end());
 
         if(!visualization.draw(measurements, models))

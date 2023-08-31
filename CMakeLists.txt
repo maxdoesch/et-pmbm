@@ -12,7 +12,7 @@ set(MURTY_INCLUDE_DIR "lib/MurtyAlgorithm")
 find_package(OpenCV REQUIRED)
 find_package(PCL 1.9 REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED COMPONENTS thread)
 
 # Include directories
 include_directories(
@@ -39,7 +39,7 @@ add_executable(test_detection_group src/test_detection_group.cpp src/simulator/T
 add_executable(test_multi_bernoulli_mixture src/test_multi_bernoulli_mixture.cpp src/simulator/Target.cpp src/simulator/Simulator.cpp src/validation/Visualization.cpp src/validation/ValidationModel.cpp src/tracker/utils.cpp src/tracker/KinematicModel.cpp src/tracker/Detection.cpp src/tracker/ExtentModel.cpp src/tracker/Bernoulli.cpp src/tracker/PoissonPointProcess.cpp src/tracker/DetectionGroup.cpp src/tracker/Group.cpp src/tracker/Hypothesis.cpp)
 add_executable(test_gating src/test_gating.cpp src/simulator/Target.cpp src/simulator/Simulator.cpp src/validation/Visualization.cpp src/validation/ValidationModel.cpp src/tracker/utils.cpp src/tracker/KinematicModel.cpp src/tracker/Detection.cpp src/tracker/ExtentModel.cpp src/tracker/Bernoulli.cpp src/tracker/PoissonPointProcess.cpp src/tracker/DetectionGroup.cpp src/tracker/Group.cpp src/tracker/Hypothesis.cpp src/tracker/Preprocessing.cpp)
 add_executable(test_dynamic_ppp src/test_dynamic_ppp.cpp src/simulator/Target.cpp src/simulator/Simulator.cpp src/validation/Visualization.cpp src/validation/ValidationModel.cpp src/validation/Evaluation.cpp src/tracker/utils.cpp src/tracker/KinematicModel.cpp src/tracker/Detection.cpp src/tracker/ExtentModel.cpp src/tracker/PoissonPointProcess.cpp src/tracker/Bernoulli.cpp src/tracker/DetectionGroup.cpp src/tracker/Group.cpp src/tracker/Hypothesis.cpp src/tracker/Preprocessing.cpp)
-
+add_executable(test_tracker src/test_tracker.cpp src/simulator/Target.cpp src/simulator/Simulator.cpp src/validation/Visualization.cpp src/validation/ValidationModel.cpp src/validation/Evaluation.cpp src/tracker/utils.cpp src/tracker/KinematicModel.cpp src/tracker/Detection.cpp src/tracker/ExtentModel.cpp src/tracker/PoissonPointProcess.cpp src/tracker/Bernoulli.cpp src/tracker/DetectionGroup.cpp src/tracker/Group.cpp src/tracker/Hypothesis.cpp src/tracker/Preprocessing.cpp src/tracker/Tracker.cpp)
 
 # Link libraries
 #target_link_libraries(et_pmbm
@@ -92,5 +92,13 @@ target_link_libraries(test_dynamic_ppp
     ${OpenCV_LIBS}
     ${PCL_LIBRARIES}
     ${Boost_LIBRARIES}
+    Eigen3::Eigen
+)
+
+target_link_libraries(test_tracker
+    ${OpenCV_LIBS}
+    ${PCL_LIBRARIES}
+    ${Boost_LIBRARIES}
+    Boost::thread
     Eigen3::Eigen
 )

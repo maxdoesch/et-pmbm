@@ -16,7 +16,7 @@ int main(int argc, char** argv)
     double const time_step = 0.1;
 
     simulator::Simulator simulator(time_step, 40);
-    simulator.addNRandomTargets(1);
+    //simulator.addNRandomTargets(1);
     
     Eigen::Matrix<double, 5, 1> i_state = Eigen::Matrix<double, 5, 1>::Zero();
     i_state[0] = -6;
@@ -135,7 +135,7 @@ int main(int argc, char** argv)
             i++;
         }
 
-        mbm.prune(-10);
+        mbm.prune(-40);
         mbm.capping(5);
         mbm.prune_bernoulli(0.1);
 
