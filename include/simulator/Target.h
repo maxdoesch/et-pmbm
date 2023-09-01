@@ -79,8 +79,24 @@ namespace simulator
             validation::RateModel* getRateValidationModel() const override;
 
         private:
-            Eigen::Matrix2d _X;
+            double const _a;
+            double const _b;
 
+            double const _p_rate;
+
+            std::random_device _rd;
+            std::mt19937 _gen;
+    };
+
+    class UniformEllipse : public ExtentModel
+    {
+        public:
+            explicit UniformEllipse(double a, double b, double p_rate);
+            void step(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements) override;
+            validation::ExtentModel* getExtentValidationModel() const override;
+            validation::RateModel* getRateValidationModel() const override;
+
+        private:
             double const _a;
             double const _b;
 

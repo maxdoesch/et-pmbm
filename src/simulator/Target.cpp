@@ -72,7 +72,7 @@ validation::KinematicModel* ConstantVelocity::getKinematicValidationModel() cons
 
 Ellipse::Ellipse(double a, double b, double p_rate) : _a{a}, _b{b}, _p_rate{p_rate}, _gen{_rd()}
 {
-    _X = Eigen::Matrix2d::Identity();
+
 }
 
 void Ellipse::step(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements)
@@ -123,6 +123,41 @@ validation::ExtentModel* Ellipse::getExtentValidationModel() const
 }
 
 validation::RateModel* Ellipse::getRateValidationModel() const
+{
+    return new validation::RateModel(_p_rate);
+}
+
+UniformEllipse::UniformEllipse(double a, double b, double p_rate) : _a{a}, _b{b}, _p_rate{p_rate}, _gen{_rd()}
+{
+
+}
+
+void UniformEllipse::step(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements)
+{
+    std::poisson_distribution<> poisson(_p_rate); 
+    std::uniform_real_distribution<> theta_uniform(0, 2 * M_PI);
+    std::uniform_real_distribution<> r_uniform(0, 1);
+
+    int samples = poisson(_gen);
+    for(int i = 0; i < samples; i++)
+    {
+        pcl::PointXYZ point;
+        double theta = theta_uniform(_gen);
+        double r = std::sqrt(r_uniform(_gen));
+
+        point.x = _a * r * std::cos(theta);
+        point.y = _b * r * std::sin(theta);
+
+        measurements->push_back(point);
+    }
+}
+
+validation::ExtentModel* UniformEllipse::getExtentValidationModel() const
+{
+    return new validation::Ellipse(_a, _b);
+}
+
+validation::RateModel* UniformEllipse::getRateValidationModel() const
 {
     return new validation::RateModel(_p_rate);
 }

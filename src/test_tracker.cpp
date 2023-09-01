@@ -15,7 +15,7 @@ int main(int argc, char** argv)
     i_state[3] = 0;
     i_state[4] = 0;
     simulator::KinematicModel* k_model = new simulator::ConstantVelocity(i_state);
-    simulator::ExtentModel* e_model = new simulator::Ellipse(1, 1, 50);
+    simulator::ExtentModel* e_model = new simulator::UniformEllipse(1, 1, 50);
     simulator::Target* target = new simulator::GenericTarget(k_model, e_model, 1, 30);
     simulator.addTarget(target);
 
@@ -24,7 +24,7 @@ int main(int argc, char** argv)
     i_state[2] = -0.3;
     i_state[3] = 0;
     k_model = new simulator::ConstantVelocity(i_state);
-    e_model = new simulator::Ellipse(1, 1, 50);
+    e_model = new simulator::UniformEllipse(1, 1, 50);
     target = new simulator::GenericTarget(k_model, e_model, 1, 30);
     simulator.addTarget(target);
 
@@ -33,7 +33,7 @@ int main(int argc, char** argv)
     i_state[2] = 0;
     i_state[3] = 0;
     k_model = new simulator::ConstantVelocity(i_state);
-    e_model = new simulator::Ellipse(1, 1, 50);
+    e_model = new simulator::UniformEllipse(1, 1, 50);
     target = new simulator::GenericTarget(k_model, e_model, 5, 30);
     simulator.addTarget(target);
 
@@ -42,7 +42,7 @@ int main(int argc, char** argv)
     i_state[2] = 0;
     i_state[3] = 1;
     k_model = new simulator::ConstantVelocity(i_state);
-    e_model = new simulator::Ellipse(0.75, 1.25, 70);
+    e_model = new simulator::UniformEllipse(0.75, 1.25, 70);
     target = new simulator::GenericTarget(k_model, e_model, 10, 20);
     simulator.addTarget(target);
 
@@ -51,7 +51,7 @@ int main(int argc, char** argv)
     i_state[2] = -2;
     i_state[3] = 0;
     k_model = new simulator::ConstantVelocity(i_state);
-    e_model = new simulator::Ellipse(1.25, 0.75, 50);
+    e_model = new simulator::UniformEllipse(1.25, 0.75, 50);
     target = new simulator::GenericTarget(k_model, e_model, 10, 20);
     simulator.addTarget(target);
 
@@ -60,7 +60,7 @@ int main(int argc, char** argv)
     i_state[2] = 1;
     i_state[3] = 0;
     k_model = new simulator::ConstantVelocity(i_state);
-    e_model = new simulator::Ellipse(1.25, 0.75, 70);
+    e_model = new simulator::UniformEllipse(1.25, 0.75, 70);
     target = new simulator::GenericTarget(k_model, e_model, 10, 20);
     simulator.addTarget(target);
 
