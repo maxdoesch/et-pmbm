@@ -73,7 +73,7 @@ int main(int argc, char** argv)
     simulator.addNRandomTargets(4);
 
 
-    validation::Visualization vizualization(time_step, 40);
+    validation::Visualization visualization(time_step, 40);
 
     tracker::MultiBernoulli mb;
 
@@ -126,8 +126,8 @@ int main(int argc, char** argv)
         mb.getValidationModels(models);
         
 
-        //vizualization.print(models);
-        if(!vizualization.draw(measurements, models))
+        //visualization.print(models);
+        if(!visualization.draw(measurements, models))
             break;
 
         for(validation::ValidationModel* v_model : models)

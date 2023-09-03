@@ -62,7 +62,7 @@ int main(int argc, char** argv)
             models.insert(models.end(), ground_truth_models.begin(), ground_truth_models.end());
             models.insert(models.end(), estimate_models.begin(), estimate_models.end());
 
-            /*
+            
             if(!visualization.draw(measurements, models))
                 break;
 
@@ -72,7 +72,7 @@ int main(int argc, char** argv)
             for(validation::ValidationModel* v_model : models)
             {
                 delete v_model;
-            }*/
+            }
         }
 
         evaluations.push_back(evaluation);

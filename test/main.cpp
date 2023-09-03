@@ -9,12 +9,13 @@
 int main(int argc, char** argv)
 {   
     double time_step = 0.2;
+    double time = 40;
 
     double a = 1.0;
     double b = 2.0;
     double p_rate = 100;
 
-    validation::Visualization viz(time_step);
+    validation::Visualization viz(time_step, time);
     
     
     Eigen::Matrix<double, 5, 1> i_state = Eigen::Matrix<double, 5, 1>::Zero();
@@ -25,7 +26,7 @@ int main(int argc, char** argv)
     simulator::ExtentModel* e_model = new simulator::Ellipse(a, b, p_rate);
     simulator::Target* target = new simulator::GenericTarget(k_model, e_model, 1, 20);
     
-    simulator::Simulator simulator(time_step, 40);
+    simulator::Simulator simulator(time_step, time);
     //simulator.addNRandomTargets(5);
     simulator.addTarget(target);
 

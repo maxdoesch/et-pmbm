@@ -121,6 +121,7 @@ int main(int argc, char** argv)
 
     std::cout << "Avg. processing time: " << duration / i / 1000000. << "ms; max. processing time: " << max_duration / 1000000. << "ms" << std::endl;
 
+
     evaluation.summarize();
     evaluation.draw_plot();
 }
