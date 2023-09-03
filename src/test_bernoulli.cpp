@@ -26,7 +26,7 @@ int main(int argc, char** argv)
     simulator::ExtentModel* e_model = new simulator::Ellipse(a, b, p_rate);
     simulator::Target* target = new simulator::GenericTarget(k_model, e_model, 1, 20);
     
-    validation::Visualization viz(time_step);
+    validation::Visualization viz(time_step, 20);
     simulator::Simulator simulator(time_step, 20);
     simulator.addNRandomTargets(4);
     //simulator.addTarget(target);

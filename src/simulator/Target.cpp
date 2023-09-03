@@ -1,5 +1,6 @@
 #include "simulator/Target.h"
 #include <pcl/common/transforms.h>
+#include <cmath>
 
 using namespace simulator;
 
@@ -43,7 +44,7 @@ bool GenericTarget::endOfExistence() const
 
 bool GenericTarget::startOfExistence() const
 {
-    return _time > _start_of_existence;
+    return _time >= _start_of_existence;
 }
 
 ConstantVelocity::ConstantVelocity(Eigen::Matrix<double, 5, 1> const& initial_state) : _state{initial_state}
@@ -65,6 +66,36 @@ void ConstantVelocity::step(double ts, Eigen::Matrix4d& transformation)
 }
 
 validation::KinematicModel* ConstantVelocity::getKinematicValidationModel() const
+{
+    return new validation::ConstantVelocity(_state);
+}
+
+Parabola::Parabola(Eigen::Vector2d const& initial_state,  double offset, double time) : 
+    _sign{(initial_state[1] > 0) - (initial_state[1] < 0)}, _delta_x{-2 * initial_state[0] / time}, _delta_alpha{-_sign * M_PI / (2 * time)}, _a{std::pow((std::abs(initial_state[1]) / std::pow(initial_state[0], _p)), 1. / _p)}, _offset{_sign * offset}
+{
+    _state = Eigen::Matrix<double, 5, 1>::Zero();
+    _state.block<2,1>(0,0) = initial_state;
+    _state[4] = -_sign * M_PI / 4;
+}
+
+void Parabola::step(double ts, Eigen::Matrix4d& transformation)
+{
+    double x =  _state[0] + _delta_x * ts;
+    double y = _sign * std::pow(_a * x, _p) + _offset;
+    double dx = _delta_x;
+    double dy = (y - _state[1]) / ts;
+    double alpha = _state[4] + _delta_alpha * ts;
+
+    _state << x, y, dx, dy, alpha;
+
+    Eigen::Matrix3d rotation;
+    rotation << std::cos(_state[4]), -std::sin(_state[4]), 0, std::sin(_state[4]), std::cos(_state[4]), 0, 0, 0, 1;
+    Eigen::Vector3d translation;
+    translation << _state.block<2, 1>(0, 0), 0;
+    transformation << rotation, translation, Eigen::Matrix<double, 1, 3>::Zero(), 1;
+}
+
+validation::KinematicModel* Parabola::getKinematicValidationModel() const
 {
     return new validation::ConstantVelocity(_state);
 }

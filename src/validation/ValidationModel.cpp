@@ -19,7 +19,13 @@ void GenericValidationModel::draw(cv::Mat& image) const
     Eigen::Vector3d kinematicState;
     kinematicState << _k_model->state().block<2,1>(0,0), _k_model->state()[4];
 
+    _k_model->draw(image, _color);
     _e_model->draw(image, _color, kinematicState);
+}
+
+void GenericValidationModel::draw_position(cv::Mat& image) const
+{
+    _k_model->draw(image, _color);
 }
 
 void GenericValidationModel::print() const
@@ -68,6 +74,11 @@ Eigen::MatrixXd Ellipse::extent() const
 ConstantVelocity::ConstantVelocity(Eigen::Matrix<double, 5, 1> const& state) : _state{state}
 {
 
+}
+
+void ConstantVelocity::draw(cv::Mat& image, cv::Scalar const& color) const
+{
+    cv::circle(image, cv::Point(_state[0] * p2co + img_size_x / 2, - _state[1] * p2co + img_size_y / 2), dot_size, color, cv::FILLED);
 }
 
 Eigen::VectorXd ConstantVelocity::state() const

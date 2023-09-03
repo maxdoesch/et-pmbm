@@ -10,6 +10,46 @@ Evaluation::Evaluation()
 
 }
 
+Evaluation::Evaluation(std::vector<Evaluation> const& evaluations)
+{
+    int number_of_elements = evaluations.front()._gospa.size();
+
+    for(int i = 0; i < number_of_elements; i++)
+    {
+        double time = evaluations.front()._gospa[i].first;
+        double gospa = 0;
+        double normalized_localization_error = 0;
+        double missed_targets = 0;
+        double false_targets = 0;
+
+        for(auto const& evaluation : evaluations)
+        {
+            gospa += evaluation._gospa[i].second;
+            normalized_localization_error += evaluation._normalized_localization_error[i].second;
+            missed_targets += evaluation._missed_targets[i].second;
+            false_targets += evaluation._false_targets[i].second;
+        }
+
+        gospa /= evaluations.size();
+        normalized_localization_error /= evaluations.size();
+        missed_targets /= evaluations.size();
+        false_targets /= evaluations.size();
+
+        _gospa.push_back(std::make_pair(time, gospa));
+        _normalized_localization_error.push_back(std::make_pair(time, normalized_localization_error));
+        _missed_targets.push_back(std::make_pair(time, missed_targets));
+        _false_targets.push_back(std::make_pair(time, false_targets));
+    }
+}
+
+Evaluation::Evaluation(Evaluation const& evaluation)
+{
+    _gospa = evaluation._gospa;
+    _normalized_localization_error = evaluation._normalized_localization_error;
+    _missed_targets = evaluation._missed_targets;
+    _false_targets = evaluation._false_targets;
+}
+
 void Evaluation::plot(std::vector<ValidationModel*> const& ground_truth, std::vector<ValidationModel*> const& estimate, double time)
 {
     GOSPA gospa(ground_truth, estimate);
@@ -161,8 +201,8 @@ double GOSPA::_gaussian_wasserstein_distance(ValidationModel const& model_1, Val
     Eigen::MatrixXd extent_1 = model_1.extent();
     Eigen::MatrixXd extent_2 = model_2.extent();
 
-    Eigen::VectorXd state_diff = state_1 - state_2;
-    double state_distance = state_diff.transpose() * state_diff;
+    Eigen::Vector2d position_diff = (state_1 - state_2).block<2,1>(0,0);
+    double position_distance = position_diff.transpose() * position_diff;
 
     Eigen::MatrixXd extent_1_sqrt = matrixSqrt(extent_1);
     Eigen::MatrixXd extent_2_sqrt = matrixSqrt(extent_2);
@@ -171,7 +211,7 @@ double GOSPA::_gaussian_wasserstein_distance(ValidationModel const& model_1, Val
     Eigen::MatrixXd comp_2 = extent_1 + extent_2 - 2 * matrixSqrt(comp_1);
     double extent_distance = comp_2.trace();
 
-    double gaussian_wasserstein_distance = state_distance + extent_distance;
+    double gaussian_wasserstein_distance = position_distance + extent_distance;
     return gaussian_wasserstein_distance;
 }
 

@@ -89,52 +89,6 @@ void PPP::add_component(PoissonComponent const& p_component)
     _p_components.push_back(p_component);
 }
 
-/*
-Bernoulli PPP::detection_likelihood(Cluster const& detection, double& likelihood) const
-{
-    int total_components = _p_components.size();
-    GIW<ConstantVelocity>* e_models = new GIW<ConstantVelocity>[total_components];
-    RateModel* r_models = new RateModel[total_components];
-    double* l_weights = new double[total_components];
-    double* weights = new double[total_components];
-
-    int idx = 0;
-    for(auto const& component : _p_components)
-    {
-        l_weights[idx]  = component.detection_likelihood(detection, e_models[idx], r_models[idx]);
-        l_weights[idx]  += std::log(component.getWeight()) + std::log(p_detection);
-
-        idx++;
-    }
-
-    double l_weight_sum = sum_log_weights(l_weights, total_components);
-
-    for(int i = 0; i < total_components; i++)
-    {
-        l_weights[i] -= l_weight_sum;
-        weights[i] = std::exp(l_weights[i]);
-    }
-
-    GIW<ConstantVelocity>* e_model = new GIW<ConstantVelocity>(weights, e_models, total_components);
-    RateModel r_model(weights, r_models, total_components);
-
-    double p_existence = 1;
-    
-    if(detection.size() == 1)
-        p_existence = 1. / (std::exp(std::log(clutter_rate) - l_weight_sum) + 1);
-
-    Bernoulli bernoulli(p_existence, e_model, r_model);
-
-    delete[] e_models;
-    delete[] r_models;
-    delete[] l_weights;
-    delete[] weights;
-
-    likelihood = l_weight_sum;
-
-    return bernoulli;
-}*/
-
 Bernoulli PPP::detection_likelihood(Cluster const& detection, double& likelihood) const
 {
     int n_components = _p_components.size();
@@ -197,7 +151,7 @@ Bernoulli PPP::detection_likelihood(Cluster const& detection, double& likelihood
 
     double p_existence = 1;
     
-    if(detection.size() == 1)
+    if(detection.size() < 1)
         p_existence = 1. / (std::exp(std::log(clutter_rate) - l_weight_sum) + 1);
 
     likelihood = l_weight_sum;
@@ -299,74 +253,29 @@ bool PoissonComponent::operator>(PoissonComponent const& p_component) const
 
 BirthModel::BirthModel()
 {
-    Eigen::Matrix4d init_state_covariance = Eigen::Matrix4d::Zero();
-    init_state_covariance(0, 0) = pow(_field_of_view_x / (3 * (_n_components + 1)), 2);
-    init_state_covariance(1, 1) = pow(_field_of_view_y / (3 * (_n_components + 1)), 2);
+    Eigen::Matrix4d P = Eigen::Matrix4d::Zero();
+    P(0, 0) = pow(field_of_view_x / (3 * (_n_components + 1)), 2);
+    P(1, 1) = pow(field_of_view_y / (3 * (_n_components + 1)), 2);
 
-    Eigen::Matrix2d init_extent_matrix = Eigen::Matrix2d::Zero(); 
-    init_extent_matrix(0, 0) = 1;
-    init_extent_matrix(1, 1) = 1;
+    Eigen::Matrix2d V = _V_rad * Eigen::Matrix2d::Identity(); 
     
     for(int i = 0; i < _n_components; i++)
     {
-        double x = _field_of_view_x / (_n_components + 1) * (i + 1) - _field_of_view_x / 2.;
+        double x = field_of_view_x / (_n_components + 1) * (i + 1) - field_of_view_x / 2.;
 
         for(int j = 0; j < _n_components; j++)
         {
-            double y = _field_of_view_y / (_n_components + 1) * (j + 1) - _field_of_view_y / 2.;
+            double y = field_of_view_y / (_n_components + 1) * (j + 1) - field_of_view_y / 2.;
 
-            Eigen::Vector4d init_state = Eigen::Vector4d::Zero();
-            init_state[0] = x;
-            init_state[1] = y;
+            Eigen::Vector4d m = Eigen::Vector4d::Zero();
+            m[0] = x;
+            m[1] = y;
 
-            GIW<ConstantVelocity> e_model(init_state, init_state_covariance, init_extent_matrix);
-            RateModel r_model(500, 5);
-            _birth_components.push_back(PoissonComponent(1e-10 / (_n_components * _n_components), e_model, r_model));
+            GIW<ConstantVelocity> e_model(m, P, V, _v);
+            RateModel r_model(_alpha, _beta);
+            _birth_components.push_back(PoissonComponent(_weight / (_n_components * _n_components), e_model, r_model));
         }
     }
-
-    /*
-    Eigen::Matrix4d init_state_covariance = Eigen::Matrix4d::Zero();
-    init_state_covariance(0, 0) = 5;
-    init_state_covariance(1, 1) = 1;
-
-    Eigen::Matrix2d init_extent_matrix = Eigen::Matrix2d::Zero(); 
-    init_extent_matrix(0, 0) = _field_of_view_x / (_n_components + 1);
-    init_extent_matrix(1, 1) = _field_of_view_y / (_n_components + 1);
-
-    double x = _field_of_view_x / 2;
-    double y = 0;
-
-    Eigen::Vector4d init_state = Eigen::Vector4d::Zero();
-    init_state[0] = x;
-    init_state[1] = y;
-
-    GIW<ConstantVelocity> e_model(init_state, init_state_covariance, init_extent_matrix);
-    RateModel r_model(50, 5);
-    _birth_components.push_back(PoissonComponent(0.5, e_model, r_model));
-
-    init_state[0] = -x;
-    init_state[1] = y;
-
-    e_model = GIW<ConstantVelocity>(init_state, init_state_covariance, init_extent_matrix);
-    r_model = RateModel(50, 5);
-    _birth_components.push_back(PoissonComponent(0.5, e_model, r_model));*/
-/*
-    Eigen::Matrix4d init_state_covariance = Eigen::Matrix4d::Zero();
-    init_state_covariance(0, 0) = pow(_field_of_view_x / 3, 2);
-    init_state_covariance(1, 1) = pow(_field_of_view_y / 3, 2);
-
-    Eigen::Matrix2d init_extent_matrix = Eigen::Matrix2d::Zero(); 
-    init_extent_matrix(0, 0) = 2;
-    init_extent_matrix(1, 1) = 2;
-
-    Eigen::Vector4d init_state = Eigen::Vector4d::Zero();
-    init_state[0] = 0;
-    init_state[1] = 0;
-
-    GIW<ConstantVelocity> e_model(init_state, init_state_covariance, init_extent_matrix);
-    RateModel r_model(5000, 5);
-    _birth_components.push_back(PoissonComponent(0.5, e_model, r_model));*/
 }
 
 BirthModel::BirthModel(BirthModel const& birth_model) : _birth_components{birth_model._birth_components}
@@ -387,6 +296,50 @@ BirthModel& BirthModel::operator=(BirthModel const& birth_model)
 }
 
 void BirthModel::birth(std::vector<PoissonComponent>& b_components) const
+{
+    for(auto& birth_component : _birth_components)
+    {
+        b_components.push_back(PoissonComponent(birth_component));
+    }
+}
+
+CenterBirthModel::CenterBirthModel()
+{
+    Eigen::Vector4d m = Eigen::Vector4d::Zero();
+    m[0] = 0;
+    m[1] = 0;
+
+    Eigen::Matrix4d P = Eigen::Matrix4d::Zero();
+    P(0, 0) = pow(field_of_view_x / 3, 2);
+    P(1, 1) = pow(field_of_view_y / 3, 2);
+    P(2,2) = 0.01;
+    P(3,3) = 0.01;
+
+    Eigen::Matrix2d V = _V_rad * Eigen::Matrix2d::Identity(); 
+
+    GIW<ConstantVelocity> e_model(m, P, V, _v);
+    RateModel r_model(_alpha, _beta);
+    _birth_components.push_back(PoissonComponent(1, e_model, r_model));
+}
+
+CenterBirthModel::CenterBirthModel(CenterBirthModel const& birth_model) : _birth_components{birth_model._birth_components}
+{
+
+}
+
+CenterBirthModel::~CenterBirthModel()
+{
+
+}
+
+CenterBirthModel& CenterBirthModel::operator=(CenterBirthModel const& birth_model)
+{
+    _birth_components = birth_model._birth_components;
+
+    return *this;
+}
+
+void CenterBirthModel::birth(std::vector<PoissonComponent>& b_components) const
 {
     for(auto& birth_component : _birth_components)
     {

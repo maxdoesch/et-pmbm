@@ -99,7 +99,7 @@ int main(int argc, char** argv)
     target = new simulator::GenericTarget(k_model, e_model, 4, 20);
     simulator.addTarget(target);
 
-    validation::Visualization visualization(time_step);
+    validation::Visualization visualization(time_step, 40);
 
     tracker::MultiBernoulliMixture mbm;
 

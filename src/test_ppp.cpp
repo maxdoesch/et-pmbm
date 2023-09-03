@@ -14,7 +14,7 @@ int main(int argc, char** argv)
     double const b = 2.0;
     double const p_rate = 100;
 
-    validation::Visualization vizualization(time_step);
+    validation::Visualization vizualization(time_step, 40);
 
     /*
     Eigen::Matrix<double, 5, 1> i_state = Eigen::Matrix<double, 5, 1>::Zero();

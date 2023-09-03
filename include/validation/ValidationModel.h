@@ -13,6 +13,7 @@ namespace validation
         public:
             virtual ~ValidationModel() {}
             virtual void draw(cv::Mat& image) const = 0;
+            virtual void draw_position(cv::Mat& image) const = 0;
             virtual void print() const = 0;
             virtual Eigen::VectorXd state() const = 0;
             virtual Eigen::MatrixXd extent() const = 0;
@@ -28,6 +29,7 @@ namespace validation
     class KinematicModel
     {
         public:
+            virtual void draw(cv::Mat& image, cv::Scalar const& color) const = 0;
             virtual Eigen::VectorXd state() const = 0;
     };
 
@@ -50,6 +52,7 @@ namespace validation
             GenericValidationModel& operator=(GenericValidationModel const& generic_validation_model) = delete;
 
             void draw(cv::Mat& image) const override;
+            void draw_position(cv::Mat& image) const override;
             void print() const override;
             Eigen::VectorXd state() const override;
             Eigen::MatrixXd extent() const override;
@@ -86,6 +89,7 @@ namespace validation
             ConstantVelocity(ConstantVelocity const& constant_velocity) = delete;
             ConstantVelocity& operator=(ConstantVelocity const& constant_velocity) = delete;
 
+            void draw(cv::Mat& image, cv::Scalar const& color) const;
             Eigen::VectorXd state() const override;
 
         private:

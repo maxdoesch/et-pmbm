@@ -52,11 +52,11 @@ template <class KinematicTemplate> GIW<KinematicTemplate>::GIW(std::vector<doubl
     _X_hat = _V / (_v - 2 * _dof - 2);
 }
 
-template <class KinematicTemplate> GIW<KinematicTemplate>::GIW(Eigen::Vector4d const& m, Eigen::Matrix4d const& P, Eigen::Matrix2d const& V) : 
+template <class KinematicTemplate> GIW<KinematicTemplate>::GIW(Eigen::Vector4d const& m, Eigen::Matrix4d const& P, Eigen::Matrix2d const& V, double v) : 
     _k_model(m, P)
 {
     _V = V;
-    _v = 2 * (_dof + 1) + 1; //v > 2d
+    _v = (v > 2 * _dof) ? v : 2 * (_dof + 1) + 1; //v > 2d
     _X_hat = _V / (_v - 2 * _dof - 2);
 }
 

@@ -25,7 +25,7 @@ namespace tracker
             explicit GIW(GIW const* e_model);
             explicit GIW(double const weights[], GIW const e_models[], int components);
             explicit GIW(std::vector<double> const& weights, std::vector<GIW> const& e_models);
-            explicit GIW(Eigen::Vector4d const& m, Eigen::Matrix4d const& P, Eigen::Matrix2d const& V);
+            explicit GIW(Eigen::Vector4d const& m, Eigen::Matrix4d const& P, Eigen::Matrix2d const& V, double v);
             ~GIW();
             void operator=(GIW const& e_model);
 

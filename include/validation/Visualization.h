@@ -15,24 +15,31 @@ namespace validation
     class Visualization
     {
         public:
-            Visualization(double time_steps);
+            Visualization(double time_step, double time);
             ~Visualization();
             bool draw(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements);
             bool draw(std::vector<ValidationModel*> const& models);
             bool draw(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements, std::vector<ValidationModel*> const& models);
             void print(std::vector<ValidationModel*> const& models) const;
+            void plot(std::vector<ValidationModel*> const& models);
             void record();
 
         private:
-            void _draw(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements);
-            void _draw(std::vector<ValidationModel*> const& models);
+            void _draw(cv::Mat& image, pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements);
+            void _draw(cv::Mat& image, std::vector<ValidationModel*> const& models);
 
-            int _time_steps_ms = 0;
+            int _time_step_ms = 0;
+            int _time_ms = 0;
 
             cv::Mat _image;
+            cv::Mat _plot;
             cv::VideoWriter outputVideo;
+
+            int const _plot_model_samples = 5;
+            int const _plot_position_samples = 20;
 
             std::string const _window_name = "Visualization";
             std::string const _vid_file_name = "tracking.avi";
+            std::string const _plt_file_name = "plot.jpg";
     };
 }

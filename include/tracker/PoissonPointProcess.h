@@ -45,10 +45,31 @@ namespace tracker
             std::vector<PoissonComponent> _birth_components;
 
             int const _n_components = 4;
-
-            double const _field_of_view_x = 1280. / 50.;
-            double const _field_of_view_y = 720. / 50.;
+            double const _V_rad = 10;
+            double const _v = 10;
+            double _alpha = 500;
+            double _beta = 5;
+            double _weight = 0.5;
     };
+
+    class CenterBirthModel
+    {
+        public:
+            CenterBirthModel();
+            ~CenterBirthModel();
+            CenterBirthModel(CenterBirthModel const& birth_model);
+            CenterBirthModel& operator=(CenterBirthModel const& birth_model);
+            void birth(std::vector<PoissonComponent>& b_components) const;
+
+        private:
+            std::vector<PoissonComponent> _birth_components;
+
+            double const _V_rad = 20;
+            double const _v = 10;
+            double _alpha = 250;
+            double _beta = 5;
+    };
+
     class PPP
     {
         public:
@@ -67,7 +88,7 @@ namespace tracker
 
         private:
             std::vector<PoissonComponent> _p_components;
-            BirthModel _b_model;
+            CenterBirthModel _b_model;
 
             double const _min_likelihood = 0.0001;
     };

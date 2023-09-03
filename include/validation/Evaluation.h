@@ -9,7 +9,8 @@ namespace validation
     {
         public:
             Evaluation();
-            Evaluation(Evaluation const& Evaluation) = delete;
+            explicit Evaluation(std::vector<Evaluation> const& evaluations); 
+            Evaluation(Evaluation const& evaluation);
             Evaluation& operator=(Evaluation const& Evaluation) = delete;
 
             void plot(std::vector<ValidationModel*> const& ground_truth, std::vector<ValidationModel*> const& estimate, double time);
@@ -19,8 +20,8 @@ namespace validation
         private:
             std::vector<std::pair<double, double>> _gospa;
             std::vector<std::pair<double, double>> _normalized_localization_error;
-            std::vector<std::pair<double, int>> _missed_targets;
-            std::vector<std::pair<double, int>> _false_targets;
+            std::vector<std::pair<double, double>> _missed_targets;
+            std::vector<std::pair<double, double>> _false_targets;
     };
 
 

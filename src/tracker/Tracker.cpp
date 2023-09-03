@@ -60,7 +60,7 @@ void PMBM::reduce()
     _ppp.prune(_ppp_pruning_threshold);
     _ppp.capping(_max_number_of_ppp_components);
 
-    _mbm.print();
+    //_mbm.print();
 }
 
 void PMBM::estimate(std::vector<validation::ValidationModel*>& estimate_models) const

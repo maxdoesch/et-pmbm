@@ -73,7 +73,7 @@ int main(int argc, char** argv)
     simulator.addNRandomTargets(4);
 
 
-    validation::Visualization vizualization(time_step);
+    validation::Visualization vizualization(time_step, 40);
 
     tracker::MultiBernoulli mb;
 

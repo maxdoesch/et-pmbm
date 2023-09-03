@@ -64,7 +64,7 @@ int main(int argc, char** argv)
     target = new simulator::GenericTarget(k_model, e_model, 10, 20);
     simulator.addTarget(target);
 
-    validation::Visualization visualization(time_step);
+    validation::Visualization visualization(time_step, 40);
     validation::Evaluation evaluation;
 
     std::chrono::nanoseconds::rep duration = 0;

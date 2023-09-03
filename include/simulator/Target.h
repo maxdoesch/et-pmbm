@@ -70,6 +70,24 @@ namespace simulator
             Eigen::Matrix<double, 5, 1> _state;
     };
 
+    class Parabola : public KinematicModel
+    {
+        public:
+            explicit Parabola(Eigen::Vector2d const& initial_state, double offset, double time);
+            void step(double ts, Eigen::Matrix4d& transform) override;
+            validation::KinematicModel* getKinematicValidationModel() const override;
+
+        private:
+            Eigen::Matrix<double, 5, 1> _state;
+
+            double const _p = 6;
+            int const _sign;
+            double const _delta_x;
+            double const _delta_alpha;
+            double const _a;
+            double _offset;
+    };
+
     class Ellipse : public ExtentModel
     {
         public:

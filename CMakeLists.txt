@@ -40,6 +40,7 @@ add_executable(test_multi_bernoulli_mixture src/test_multi_bernoulli_mixture.cpp
 add_executable(test_gating src/test_gating.cpp src/simulator/Target.cpp src/simulator/Simulator.cpp src/validation/Visualization.cpp src/validation/ValidationModel.cpp src/tracker/utils.cpp src/tracker/KinematicModel.cpp src/tracker/Detection.cpp src/tracker/ExtentModel.cpp src/tracker/Bernoulli.cpp src/tracker/PoissonPointProcess.cpp src/tracker/DetectionGroup.cpp src/tracker/Group.cpp src/tracker/Hypothesis.cpp src/tracker/Preprocessing.cpp)
 add_executable(test_dynamic_ppp src/test_dynamic_ppp.cpp src/simulator/Target.cpp src/simulator/Simulator.cpp src/validation/Visualization.cpp src/validation/ValidationModel.cpp src/validation/Evaluation.cpp src/tracker/utils.cpp src/tracker/KinematicModel.cpp src/tracker/Detection.cpp src/tracker/ExtentModel.cpp src/tracker/PoissonPointProcess.cpp src/tracker/Bernoulli.cpp src/tracker/DetectionGroup.cpp src/tracker/Group.cpp src/tracker/Hypothesis.cpp src/tracker/Preprocessing.cpp)
 add_executable(test_tracker src/test_tracker.cpp src/simulator/Target.cpp src/simulator/Simulator.cpp src/validation/Visualization.cpp src/validation/ValidationModel.cpp src/validation/Evaluation.cpp src/tracker/utils.cpp src/tracker/KinematicModel.cpp src/tracker/Detection.cpp src/tracker/ExtentModel.cpp src/tracker/PoissonPointProcess.cpp src/tracker/Bernoulli.cpp src/tracker/DetectionGroup.cpp src/tracker/Group.cpp src/tracker/Hypothesis.cpp src/tracker/Preprocessing.cpp src/tracker/Tracker.cpp)
+add_executable(monte_carlo_scenario_1 src/monte_carlo_scenario_1.cpp src/simulator/Target.cpp src/simulator/Simulator.cpp src/validation/Visualization.cpp src/validation/ValidationModel.cpp src/validation/Evaluation.cpp src/tracker/utils.cpp src/tracker/KinematicModel.cpp src/tracker/Detection.cpp src/tracker/ExtentModel.cpp src/tracker/PoissonPointProcess.cpp src/tracker/Bernoulli.cpp src/tracker/DetectionGroup.cpp src/tracker/Group.cpp src/tracker/Hypothesis.cpp src/tracker/Preprocessing.cpp src/tracker/Tracker.cpp)
 
 # Link libraries
 #target_link_libraries(et_pmbm
@@ -96,6 +97,14 @@ target_link_libraries(test_dynamic_ppp
 )
 
 target_link_libraries(test_tracker
+    ${OpenCV_LIBS}
+    ${PCL_LIBRARIES}
+    ${Boost_LIBRARIES}
+    Boost::thread
+    Eigen3::Eigen
+)
+
+target_link_libraries(monte_carlo_scenario_1
     ${OpenCV_LIBS}
     ${PCL_LIBRARIES}
     ${Boost_LIBRARIES}
