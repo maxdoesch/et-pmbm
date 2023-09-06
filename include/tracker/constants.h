@@ -12,6 +12,6 @@ namespace tracker
     double constexpr partition_radius_step = 0.15;
     int constexpr min_cluster_size = 3;
     double constexpr gating_threshold = 9;
-    double constexpr field_of_view_x = 20;
+    double constexpr field_of_view_x = 15;
     double constexpr field_of_view_y = 10;
 }

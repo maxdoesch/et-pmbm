@@ -64,10 +64,10 @@ namespace tracker
         private:
             std::vector<PoissonComponent> _birth_components;
 
-            double const _V_rad = 20;
+            double const _V_rad = 10;
             double const _v = 10;
-            double _alpha = 250;
-            double _beta = 5;
+            double _alpha = 50;
+            double _beta = 1;
     };
 
     class PPP

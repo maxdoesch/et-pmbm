@@ -87,7 +87,7 @@ void Simulator::getValidationModels(std::vector<validation::ValidationModel*>& m
 
 double Simulator::getTime() const
 {
-    return _time;
+    return _time - _time_step;
 }
 
 bool Simulator::endOfSimulation() const

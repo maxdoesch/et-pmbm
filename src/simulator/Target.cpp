@@ -21,7 +21,7 @@ void GenericTarget::step(double time, pcl::PointCloud<pcl::PointXYZ>::Ptr const&
     double ts = time - _time;
     _time = time;
 
-    if(_time > _start_of_existence && _time < _end_of_existence)
+    if(_time >= _start_of_existence && _time < _end_of_existence)
     {
         Eigen::Matrix4d transformation;
 
@@ -71,7 +71,7 @@ validation::KinematicModel* ConstantVelocity::getKinematicValidationModel() cons
 }
 
 Parabola::Parabola(Eigen::Vector2d const& initial_state,  double offset, double time) : 
-    _sign{(initial_state[1] > 0) - (initial_state[1] < 0)}, _delta_x{-2 * initial_state[0] / time}, _delta_alpha{-_sign * M_PI / (2 * time)}, _a{std::pow((std::abs(initial_state[1]) / std::pow(initial_state[0], _p)), 1. / _p)}, _offset{_sign * offset}
+    _sign{(initial_state[1] > 0) - (initial_state[1] < 0)}, _delta_x{-2 * initial_state[0] / time}, _delta_alpha{-_sign * M_PI / (2 * time)}, _a{std::pow(((std::abs(initial_state[1]) - offset) / std::pow(initial_state[0], _p)), 1. / _p)}, _offset{_sign * offset}
 {
     _state = Eigen::Matrix<double, 5, 1>::Zero();
     _state.block<2,1>(0,0) = initial_state;

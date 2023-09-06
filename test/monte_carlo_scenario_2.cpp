@@ -6,7 +6,7 @@
 int main(int argc, char** argv)
 {
     double const time_step = 0.1;
-    double const time = 10;
+    double const time = 20;
     double const monte_carlo_iterations = 200;
 
     std::vector<validation::Evaluation> evaluations;
@@ -18,28 +18,37 @@ int main(int argc, char** argv)
     {
         simulator::Simulator simulator(time_step, time);
         
-        Eigen::Matrix<double, 2, 1> i_state = Eigen::Matrix<double, 2, 1>::Zero();
-        i_state[0] = -12;
-        i_state[1] = 4;
-        simulator::KinematicModel* k_model = new simulator::Parabola(i_state, 1.1, time);
-        simulator::ExtentModel* e_model = new simulator::UniformEllipse(1., 0.5, 50);
-        simulator::Target* target = new simulator::GenericTarget(k_model, e_model, 0, time);
-        simulator.addTarget(target);
-        
-        i_state = Eigen::Matrix<double, 2, 1>::Zero();
-        i_state[0] = -12;
-        i_state[1] = -4;
-        k_model = new simulator::Parabola(i_state, 1.1, time);
-        e_model = new simulator::UniformEllipse(1., 0.5, 50);
-        target = new simulator::GenericTarget(k_model, e_model, 0, time);
+        Eigen::Matrix<double, 5, 1> i_state = Eigen::Matrix<double, 5, 1>::Zero();
+        i_state[2] = 0.7;
+        i_state[3] = 0.7;
+        i_state[4] = -M_PI / 4.;
+        simulator::KinematicModel* k_model = new simulator::ConstantVelocity(i_state);
+        simulator::ExtentModel* e_model = new simulator::UniformEllipse(0.5, 0.25, 30);
+        simulator::Target* target = new simulator::GenericTarget(k_model, e_model, 0, 12.5);
         simulator.addTarget(target);
 
-        Eigen::Matrix<double, 5,1> i_state_2 = Eigen::Matrix<double, 5, 1>::Zero();
-        i_state_2[0] = 12;
-        i_state_2[1] = 7.5;
-        k_model = new simulator::ConstantVelocity(i_state_2);
-        e_model = new simulator::UniformEllipse(1, 2, 20);
-        target = new simulator::GenericTarget(k_model, e_model, 0, time);
+        i_state[2] = 0.7;
+        i_state[3] = -0.7;
+        i_state[4] = M_PI / 4.;
+        k_model = new simulator::ConstantVelocity(i_state);
+        e_model = new simulator::UniformEllipse(0.7, 0.5, 40);
+        target = new simulator::GenericTarget(k_model, e_model, 2.5, 15);
+        simulator.addTarget(target);
+
+        i_state[2] = -0.7;
+        i_state[3] = -0.7;
+        i_state[4] = -M_PI / 4.;
+        k_model = new simulator::ConstantVelocity(i_state);
+        e_model = new simulator::UniformEllipse(0.9, 0.75, 50);
+        target = new simulator::GenericTarget(k_model, e_model, 5, 17.5);
+        simulator.addTarget(target);
+
+        i_state[2] = -0.7;
+        i_state[3] = 0.7;
+        i_state[4] = M_PI / 4.;
+        k_model = new simulator::ConstantVelocity(i_state);
+        e_model = new simulator::UniformEllipse(1.1, 1.0, 60);
+        target = new simulator::GenericTarget(k_model, e_model, 7.5, 20);
         simulator.addTarget(target);
 
         validation::Visualization visualization(time_step, time);
@@ -80,7 +89,6 @@ int main(int argc, char** argv)
                 break;
 
             visualization.record();
-            
             visualization.plot(measurements, ground_truth_models);*/
 
             for(validation::ValidationModel* v_model : models)
@@ -89,15 +97,15 @@ int main(int argc, char** argv)
             }
         }
 
+        evaluations.push_back(evaluation);
+
         auto stop = std::chrono::high_resolution_clock::now();
         duration += std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
         if(std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count() > max_duration)
             max_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
-
-        evaluations.push_back(evaluation);
     }
 
-     std::cout << "Avg. processing time: " << duration / monte_carlo_iterations / 1000000. << "ms; max. processing time: " << max_duration / 1000000. << "ms" << std::endl;
+    std::cout << "Avg. processing time: " << duration / monte_carlo_iterations / 1000000. << "ms; max. processing time: " << max_duration / 1000000. << "ms" << std::endl;
 
     validation::Evaluation monte_carlo_evaluation(evaluations);
     monte_carlo_evaluation.summarize();

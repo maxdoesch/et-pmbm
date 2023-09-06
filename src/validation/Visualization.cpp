@@ -7,6 +7,7 @@ Visualization::Visualization(double time_step, double time) :
 {
     cv::namedWindow(_window_name, cv::WINDOW_AUTOSIZE);
     outputVideo.open(_vid_file_name, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 1 / time_step, _image.size());
+    _plot = cv::imread(_plt_background_file_name);
 }
 
 Visualization::~Visualization()
@@ -66,15 +67,21 @@ void Visualization::print(std::vector<ValidationModel*> const& models) const
         model->print();
 }
 
-void Visualization::plot(std::vector<ValidationModel*> const& models)
+void Visualization::plot(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements, std::vector<ValidationModel*> const& models)
 {
     int const _total_steps = _time_ms / _time_step_ms;
     int const _plot_model_steps = _total_steps / _plot_model_samples;
     int const _plot_position_steps = _total_steps / _plot_position_samples;
     static int steps = 0;
+    static bool halft_time_reached = false; 
 
     if(!(steps % _plot_model_steps))
     {
+        if(steps > _total_steps / 2 && !halft_time_reached)
+        {
+            _draw(_plot, measurements);
+            halft_time_reached = true;
+        }
         _draw(_plot, models);
     }
     else if(!(steps % _plot_position_steps))

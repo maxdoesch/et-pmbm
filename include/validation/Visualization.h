@@ -21,7 +21,7 @@ namespace validation
             bool draw(std::vector<ValidationModel*> const& models);
             bool draw(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements, std::vector<ValidationModel*> const& models);
             void print(std::vector<ValidationModel*> const& models) const;
-            void plot(std::vector<ValidationModel*> const& models);
+            void plot(pcl::PointCloud<pcl::PointXYZ>::Ptr const & measurements, std::vector<ValidationModel*> const& models);
             void record();
 
         private:
@@ -36,10 +36,11 @@ namespace validation
             cv::VideoWriter outputVideo;
 
             int const _plot_model_samples = 5;
-            int const _plot_position_samples = 20;
+            int const _plot_position_samples = 10;
 
             std::string const _window_name = "Visualization";
             std::string const _vid_file_name = "tracking.avi";
-            std::string const _plt_file_name = "plot.jpg";
+            std::string const _plt_file_name = "plot.png";
+            std::string const _plt_background_file_name = "coordinate_system.png";
     };
 }

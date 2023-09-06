@@ -65,7 +65,8 @@ void Evaluation::draw_plot() const
     Gnuplot gp;
 
     // Set the terminal type to a window
-    gp << "set terminal wxt size 1400,1000\n";
+    gp << "set terminal pngcairo enhanced font 'arial,30' size 2000,1500 linewidth 4\n";
+    gp << "set output 'my_plot.png'\n";
 
     // Set multiplot layout
     gp << "set multiplot layout 2,2 rowsfirst\n";
@@ -85,6 +86,8 @@ void Evaluation::draw_plot() const
 
     // Unset multiplot
     gp << "unset multiplot\n";
+
+    gp << "exit\n";
 }
 
 void Evaluation::summarize() const
