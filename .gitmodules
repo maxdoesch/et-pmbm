@@ -1,3 +1,6 @@
 [submodule "lib/gnuplot-iostream"]
 	path = lib/gnuplot-iostream
 	url = https://github.com/dstahlke/gnuplot-iostream.git
+[submodule "lib/MurtyAlgorithm"]
+	path = lib/MurtyAlgorithm
+	url = https://github.com/maxdoesch/MurtyAlgorithm.git
