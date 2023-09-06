@@ -27,7 +27,9 @@ void PartitionExtractor::getPartitionedParents(std::vector<PartitionedParent>& p
     for(auto const& parent_detection : parent_detections.detections)
     {
         PartitionedParent partitioned_parent(parent_detection);
-        partitioned_parents.push_back(partitioned_parent);
+
+        if(partitioned_parent.size() > 0)
+            partitioned_parents.push_back(partitioned_parent);
     }
 }
 

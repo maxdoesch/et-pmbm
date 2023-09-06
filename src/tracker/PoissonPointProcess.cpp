@@ -108,9 +108,12 @@ Bernoulli PPP::detection_likelihood(Cluster const& detection, double& likelihood
         double l_weight = component.detection_likelihood(detection, e_model, r_model);
         l_weight += std::log(component.getWeight()) + std::log(p_detection);
 
-        e_models.push_back(e_model);
-        r_models.push_back(r_model);
-        l_weights.push_back(l_weight);
+        if(l_weight > _min_log_likelihood)
+        {
+            e_models.push_back(e_model);
+            r_models.push_back(r_model);
+            l_weights.push_back(l_weight);
+        }
     }
 
     double l_weight_sum = sum_log_weights(l_weights);
@@ -306,12 +309,12 @@ void BirthModel::birth(std::vector<PoissonComponent>& b_components) const
 CenterBirthModel::CenterBirthModel()
 {
     Eigen::Vector4d m = Eigen::Vector4d::Zero();
-    m[0] = 0;
+    m[0] = field_of_view_x;
     m[1] = 0;
 
     Eigen::Matrix4d P = Eigen::Matrix4d::Zero();
-    P(0, 0) = pow(field_of_view_x / 3, 2);
-    P(1, 1) = pow(field_of_view_y / 3, 2);
+    P(0, 0) = pow(2*field_of_view_x / 3, 2);
+    P(1, 1) = pow(2*field_of_view_y / 3, 2);
     P(2,2) = 0.01;
     P(3,3) = 0.01;
 

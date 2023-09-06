@@ -242,3 +242,8 @@ PartitionedParent::PartitionedParent(PartitionedParent const& partitioned_parent
 {
     
 }
+
+int PartitionedParent::size() const
+{
+    return partitions.size();
+}

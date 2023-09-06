@@ -62,6 +62,8 @@ namespace tracker
             PartitionedParent(PartitionedParent const& partitioned_parent);
             PartitionedParent& operator=(PartitionedParent const& partitioned_parent) = delete;
 
+            int size() const;
+
             Cluster parent;
             std::vector<Partition> partitions;
     };
