@@ -53,6 +53,15 @@ Eigen::MatrixXd GenericValidationModel::extent() const
     return rot * X * rot.transpose();
 }
 
+Eigen::VectorXd GenericValidationModel::getExent() const
+{
+    Eigen::Vector3d extent;
+    extent.block<2,1>(0,0) = _e_model->getExtent();
+    extent[2] = _k_model->state()[4];
+
+    return extent;
+} 
+
 Ellipse::Ellipse(double a, double b)  : _a{a}, _b{b} 
 {
     
@@ -69,6 +78,13 @@ Eigen::MatrixXd Ellipse::extent() const
     X << _a*_a, 0, 0, _b*_b;
 
     return X;
+}
+
+Eigen::VectorXd Ellipse::getExtent() const
+{
+    Eigen::Vector2d extent = {_a, _b};
+    
+    return extent;
 }
 
 ConstantVelocity::ConstantVelocity(Eigen::Matrix<double, 5, 1> const& state) : _state{state}

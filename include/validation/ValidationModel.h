@@ -17,6 +17,7 @@ namespace validation
             virtual void print() const = 0;
             virtual Eigen::VectorXd state() const = 0;
             virtual Eigen::MatrixXd extent() const = 0;
+            virtual Eigen::VectorXd getExent() const = 0;
     };
 
     class ExtentModel
@@ -24,6 +25,7 @@ namespace validation
         public:
             virtual void draw(cv::Mat& image, cv::Scalar const& color, Eigen::Vector3d const& state) const = 0;
             virtual Eigen::MatrixXd extent() const = 0;
+            virtual Eigen::VectorXd getExtent() const = 0;
     };
 
     class KinematicModel
@@ -56,6 +58,7 @@ namespace validation
             void print() const override;
             Eigen::VectorXd state() const override;
             Eigen::MatrixXd extent() const override;
+            Eigen::VectorXd getExent() const override;
             
         private:
             KinematicModel* _k_model;
@@ -75,6 +78,7 @@ namespace validation
 
             void draw(cv::Mat& image, cv::Scalar const& color, Eigen::Vector3d const& state) const override;
             Eigen::MatrixXd extent() const override;
+            Eigen::VectorXd getExtent() const override;
 
         private:
             double _a = 0;
