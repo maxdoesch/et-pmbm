@@ -41,7 +41,16 @@ void ConstantVelocity::g(double ts)
 {
     G << Eigen::Matrix2d::Identity(), ts * Eigen::Matrix2d::Identity(), Eigen::Matrix2d::Zero(), Eigen::Matrix2d::Identity();
 
-    Q = _sigma * ts * Eigen::Matrix4d::Identity();
+    double ts_four = std::pow(ts, 4) / 4.;
+    double ts_three = std::pow(ts, 3) / 2.;
+    double ts_two = std::pow(ts, 2);
+
+    Q << ts_four, 0, ts_three, 0,
+        0, ts_four, 0, ts_three,
+        ts_three, 0, ts_two, 0,
+        0, ts_three, 0, ts_two;
+
+    Q = std::pow(_sigma, 2) * Q;
 
     m = G * m;
 
