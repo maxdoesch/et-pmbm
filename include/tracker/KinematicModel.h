@@ -31,7 +31,7 @@ namespace tracker
         private:
             void _merge(ConstantVelocity& k_model, double const weights[], ConstantVelocity const k_models[], int components);
 
-            double const _sigma = 10;
+            double const _sigma = 0.5;
     };
 }
 
