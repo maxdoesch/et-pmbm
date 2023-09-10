@@ -92,7 +92,7 @@ template <class KinematicTemplate> double GIW<KinematicTemplate>::update(Cluster
 
     Eigen::MatrixXd X_hat = _V / (_v - 2 * _dof - 2);
     Eigen::VectorXd epsilon = z - _k_model.H * _k_model.m;
-    Eigen::MatrixXd S = _k_model.H * _k_model.P * _k_model.H.transpose() + X_hat / n;
+    Eigen::MatrixXd S = _k_model.H * _k_model.P * _k_model.H.transpose() + X_hat / (4*n);
     Eigen::MatrixXd S_inv = S.inverse();
     Eigen::MatrixXd K = _k_model.P * _k_model.H.transpose() * S_inv;
     
