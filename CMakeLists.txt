@@ -46,3 +46,13 @@ foreach(test_source ${EXEC})
         Eigen3::Eigen
     )
 endforeach()
+
+add_library(et_pmbm_lib ${SRCS})
+
+target_link_libraries(et_pmbm_lib    
+    ${OpenCV_LIBS}
+    ${PCL_LIBRARIES}
+    ${Boost_LIBRARIES}
+    Boost::thread
+    Eigen3::Eigen
+)
