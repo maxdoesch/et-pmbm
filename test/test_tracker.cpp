@@ -7,7 +7,7 @@ int main(int argc, char** argv)
 {
     double const time_step = 0.1;
 
-    simulator::Simulator simulator(time_step, 40);
+    simulator::Simulator simulator(time_step, 15);
     Eigen::Matrix<double, 5, 1> i_state = Eigen::Matrix<double, 5, 1>::Zero();
     i_state[0] = -6;
     i_state[1] = 0;
@@ -16,7 +16,7 @@ int main(int argc, char** argv)
     i_state[4] = 0;
     simulator::KinematicModel* k_model = new simulator::ConstantVelocity(i_state);
     simulator::ExtentModel* e_model = new simulator::UniformEllipse(1, 1, 50);
-    simulator::Target* target = new simulator::GenericTarget(k_model, e_model, 1, 30);
+    simulator::Target* target = new simulator::GenericTarget(k_model, e_model, 0, 30);
     simulator.addTarget(target);
 
     i_state[0] = 6;
@@ -25,7 +25,7 @@ int main(int argc, char** argv)
     i_state[3] = 0;
     k_model = new simulator::ConstantVelocity(i_state);
     e_model = new simulator::UniformEllipse(1, 1, 50);
-    target = new simulator::GenericTarget(k_model, e_model, 1, 30);
+    target = new simulator::GenericTarget(k_model, e_model, 0, 30);
     simulator.addTarget(target);
 
     i_state[0] = -8;
@@ -34,7 +34,7 @@ int main(int argc, char** argv)
     i_state[3] = 0;
     k_model = new simulator::ConstantVelocity(i_state);
     e_model = new simulator::UniformEllipse(1, 1, 50);
-    target = new simulator::GenericTarget(k_model, e_model, 5, 30);
+    target = new simulator::GenericTarget(k_model, e_model, 2, 30);
     simulator.addTarget(target);
 
     i_state[0] = 10;
@@ -43,7 +43,7 @@ int main(int argc, char** argv)
     i_state[3] = 1;
     k_model = new simulator::ConstantVelocity(i_state);
     e_model = new simulator::UniformEllipse(0.75, 1.25, 70);
-    target = new simulator::GenericTarget(k_model, e_model, 10, 20);
+    target = new simulator::GenericTarget(k_model, e_model, 4, 20);
     simulator.addTarget(target);
 
     i_state[0] = 10;
@@ -52,7 +52,7 @@ int main(int argc, char** argv)
     i_state[3] = 0;
     k_model = new simulator::ConstantVelocity(i_state);
     e_model = new simulator::UniformEllipse(1.25, 0.75, 50);
-    target = new simulator::GenericTarget(k_model, e_model, 10, 20);
+    target = new simulator::GenericTarget(k_model, e_model, 5, 20);
     simulator.addTarget(target);
 
     i_state[0] = -10;
@@ -61,10 +61,10 @@ int main(int argc, char** argv)
     i_state[3] = 0;
     k_model = new simulator::ConstantVelocity(i_state);
     e_model = new simulator::UniformEllipse(1.25, 0.75, 70);
-    target = new simulator::GenericTarget(k_model, e_model, 10, 20);
+    target = new simulator::GenericTarget(k_model, e_model, 5, 20);
     simulator.addTarget(target);
 
-    validation::Visualization visualization(time_step, 40);
+    validation::Visualization visualization(time_step, 15);
     validation::Evaluation evaluation;
 
     std::chrono::nanoseconds::rep duration = 0;

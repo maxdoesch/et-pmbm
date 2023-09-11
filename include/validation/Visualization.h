@@ -41,6 +41,6 @@ namespace validation
             std::string const _window_name = "Visualization";
             std::string const _vid_file_name = "tracking.avi";
             std::string const _plt_file_name = "plot.png";
-            std::string const _plt_background_file_name = "coordinate_system.png";
+            std::string const _plt_background_file_name = "../images/coordinate_system.png";
     };
 }
